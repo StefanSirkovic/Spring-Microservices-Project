@@ -4,3 +4,21 @@ server:
 spring:
   application:
     name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: 'postgres'
+    password: 'password'
+
+  jpa:
+    hibernate:
+        ddl-auto: create-drop
+    properties:
+          hibernate:
+              dialect: org.hibernate.dialect.PostgreSQLDialect
+              format_sql: 'true'
+    show-sql: true
+
+  security:
+    user:
+     name: admin
+     password: admin
