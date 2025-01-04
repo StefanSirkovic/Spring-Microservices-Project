@@ -22,3 +22,14 @@ spring:
     user:
      name: admin
      password: admin
+
+application:
+  security:
+    jwt:
+      secret-key: qxXVU7KrMzGbuXSPasnzRYfiDtqV0DEA
+
+
+
+
+
+
