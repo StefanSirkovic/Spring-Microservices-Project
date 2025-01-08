@@ -1,5 +1,6 @@
 package com.team.project.manager.service;
 
+import com.team.project.manager.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -35,6 +36,7 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails){
+        extraClaims.put("role", ((User) userDetails).getRole().name());
         return Jwts
                 .builder()
                 .setClaims(extraClaims)

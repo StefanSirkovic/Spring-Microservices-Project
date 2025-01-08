@@ -18,15 +18,11 @@ spring:
               format_sql: 'true'
     show-sql: true
 
-  security:
-    user:
-     name: admin
-     password: admin
 
 application:
   security:
     jwt:
-      secret-key: qxXVU7KrMzGbuXSPasnzRYfiDtqV0DEA
+      secret-key: f07d0e927290cb12003c282ea8840e7e70b20aa147d432b66d182e0396e06d81718bf1900cff04b881302459d53ba533c8f1838dc7580cd23b63ba66ee61f294a9b558c837a4e71f74bc4ee2cbd7e70b0fa7a7da1528ed83703babea0b2e0b2dfa21e6af619a30075419ce59b26796403d23a7f7067cc2f20100fe94bca162274fbb4e089ee9d8fbd70fdbbca05b6faea88b1f63ee94a92666082aea3a235f6e9405801afe0a3f8bf314a97082f3b239a2a32557c93ae53818c58ddf71768a727db073582fbd3e4390be4b0fd35dce68858d32cf8857ae249b7b6001a68dacb38ef918d7861ea5485cc4bed1070e552624977a0a719a8075a7ff071559e1348b
 
 
 
