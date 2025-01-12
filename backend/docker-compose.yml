@@ -19,15 +19,15 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://database:5432/task_db
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://task-database:5432/task_db
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=secret
+      - SPRING_DATASOURCE_PASSWORD=password
     depends_on:
-      - database
+      - task-database
     networks:
       - postgres
 
-  database-auth:
+  database:
     image: postgres
     environment:
       POSTGRES_USER: postgres
@@ -41,16 +41,16 @@ services:
       - postgres
     restart: unless-stopped
 
-  database-task:
+  task-database:
     image: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: task_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - db_data:/var/lib/postgresql@17/data
+      - task_db_data:/var/lib/postgresql@17/data
     networks:
       - postgres
     restart: unless-stopped
@@ -76,4 +76,5 @@ networks:
 
 volumes:
   db_data:
+  task_db_data:
   pgadmin:
