@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .cors(Customizer.withDefaults())
                 .authenticationProvider(authenticationProvider)
                 .exceptionHandling(exception ->exception
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint()))
