@@ -1,12 +1,10 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import AuthPage from "./pages/AuthPage";
-import Dashboard from "./components/Dashboard";
-
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/" />;
-};
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AuthPage from "./pages/AuthPage"
+import MemberDashboard from "./components/MemberDashboard";
+import ManagerDashboard from "./components/ManagerDashboard";
+import AdminDashboard from "./components/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -14,14 +12,32 @@ function App() {
       <Routes>
         <Route path="/" element={<AuthPage />} />
         <Route
-          path="/dashboard"
+          path="/member/dashboard"
           element={
-            <ProtectedRoute>
-              <Dashboard />
+            <ProtectedRoute allowedRoles={["MEMBER", "ADMIN", "MANAGER"]}>
+              <MemberDashboard />
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/manager/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["MANAGER", "ADMIN"]}>
+              <ManagerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/login" element={<AuthPage />} />
       </Routes>
+      
     </Router>
   );
 }

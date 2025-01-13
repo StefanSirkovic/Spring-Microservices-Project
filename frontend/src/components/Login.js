@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -20,11 +20,28 @@ const Login = ({ onLogin }) => {
 
       if (response.ok) {
         const data = await response.json();
-        onLogin(data.token);
+        const token = data.token;
+        localStorage.setItem("token", token);
+        
+        
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const role = decodedToken.role;
+        localStorage.setItem("role", role);
+
+       
+        if (role === "ADMIN") {
+          navigate("/admin/dashboard");
+        } else if (role === "MANAGER") {
+          navigate("/manager/dashboard");
+        } else if (role === "MEMBER") {
+          navigate("/member/dashboard");
+        } else {
+          toast.error("Unknown role");
+        }
+
+        toast.success("Successfully logged in!");
         setEmail("");
         setPassword("");
-        toast.success("Successfully logged in!");
-        navigate("/dashboard"); // Preusmeravanje
       } else {
         toast.error("Invalid credentials");
       }

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 const Register = ({ onToggle }) => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("MEMBER");
@@ -14,11 +16,13 @@ const Register = ({ onToggle }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ firstName, lastName, email, password, role }),
       });
   
       if (response.ok) {
         toast.success("Successfully registered!");
+        setFirstName("");
+        setLastName("");
         setEmail("");
         setPassword("");
         setRole("MEMBER");
@@ -44,6 +48,28 @@ const Register = ({ onToggle }) => {
       <p className="text-center text-gray-500 mb-6">
         Please enter your informations.
       </p>
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium mb-2">First name</label>
+        <input
+          type="text"
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+          placeholder="Enter your first name"
+          required
+        />
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 font-medium mb-2">Last name</label>
+        <input
+          type="text"
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
+          className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-green-400 focus:outline-none"
+          placeholder="Enter your last name"
+          required
+        />
+      </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-medium mb-2">Email</label>
         <input
