@@ -74,6 +74,9 @@ public class AuthenticationService {
         return response;
     }
 
+    public void delete(User user) {
+            this.userRepository.delete(user);
+    }
 }
 
 
