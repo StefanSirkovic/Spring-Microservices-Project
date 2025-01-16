@@ -39,18 +39,30 @@ const AdminDashboard = () => {
       toast.error("All fields are required.");
       return;
     }
-
+  
     try {
       const response = await fetch("http://localhost:8080/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(formData),
       });
-
+  
       if (response.ok) {
         toast.success("User successfully added!");
+  
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setUsers(data.users || []))
+          .catch((err) => console.error("Error fetching users:", err));
+        
+  
+        
         setFormData({
           firstName: "",
           lastName: "",
@@ -58,6 +70,7 @@ const AdminDashboard = () => {
           password: "",
           role: "MEMBER",
         });
+  
         setSelectedAction(null);
       } else {
         const errorText = await response.text();
@@ -68,6 +81,8 @@ const AdminDashboard = () => {
       console.error("Error registering user:", error);
     }
   };
+  
+  
 
   const handleDeleteUser = async () => {
     if (!selectedUser) {
@@ -287,7 +302,7 @@ const AdminDashboard = () => {
                   </option>
                   {users.map((user) => (
                     <option key={user.id} value={user.id}>
-                      {user.firstName} {user.lastName} ({user.email})
+                      {user.firstName} {user.lastName}
                     </option>
                   ))}
                 </select>
