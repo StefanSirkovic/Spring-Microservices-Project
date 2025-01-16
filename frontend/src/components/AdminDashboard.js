@@ -13,8 +13,16 @@ const AdminDashboard = () => {
     password: "",
     role: "MEMBER",
   });
+  const [formUpdateData, setFormUpdateData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "MEMBER",
+  });
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserUpdate, setSelectedUserUpdate] = useState(null);
 
   const navigate = useNavigate();
 
@@ -31,6 +39,10 @@ const AdminDashboard = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormUpdateData({ ...formUpdateData, [name]: value });
   };
 
   const handleRegister = async (e) => {
@@ -83,7 +95,6 @@ const AdminDashboard = () => {
   };
   
   
-
   const handleDeleteUser = async () => {
     if (!selectedUser) {
       toast.error("Please select a user to delete.");
@@ -104,9 +115,14 @@ const AdminDashboard = () => {
 
       if (response.ok) {
         toast.success("User successfully deleted!");
-        setUsers(users.filter((user) => user.id !== selectedUser));
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setUsers(data.users || []))
+          .catch((err) => console.error("Error fetching users:", err));
         setSelectedUser(null);
-        window.location.reload();
       } else {
         const errorText = await response.text();
         toast.error(errorText || "Deletion failed.");
@@ -116,6 +132,56 @@ const AdminDashboard = () => {
       console.error("Error deleting user:", error);
     }
   };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    if (!formUpdateData.firstName || !formUpdateData.lastName || !formUpdateData.email || !formUpdateData.password) {
+      toast.error("All fields are required.");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8080/auth/update/${selectedUserUpdate}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formUpdateData),
+      });
+  
+      if (response.ok) {
+        toast.success("User successfully updated!", {
+          duration: 5000,
+        });
+  
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setUsers(data.users || []))
+          .catch((err) => console.error("Error fetching users:", err));
+  
+  
+        setSelectedUserUpdate(null);
+        setFormUpdateData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          role: "MEMBER",
+        });
+        setSelectedAction(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Update failed.");
+      }
+    } catch (error) {
+      toast.error("Error updating user. Please try again.");
+      console.error("Error updating user:", error);
+    }
+  };
+  
 
   useEffect(() => {
     fetch("http://localhost:8080/admin/dashboard", {
@@ -206,6 +272,14 @@ const AdminDashboard = () => {
                 onClick={() => handleAction("deleteUser")}
               >
                 Delete User
+              </button>
+              <button
+                className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+                  selectedAction === "updateUser" && "ring ring-yellow-300"
+                }`}
+                onClick={() => handleAction("updateUser")}
+              >
+                Update User
               </button>
             </div>
 
@@ -315,6 +389,105 @@ const AdminDashboard = () => {
                 </button>
               </div>
             )}
+
+            {/* Update User Section */}
+            {selectedAction === "updateUser" && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold">Select User to Update</h3>
+                <select
+                  value={selectedUserUpdate || ""}
+                  onChange={(e) => setSelectedUserUpdate(e.target.value)}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a user
+                  </option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                    </option>
+                  ))}
+                </select>
+                <form className="mt-6 space-y-4" onSubmit={handleUpdateUser}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formUpdateData.firstName}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formUpdateData.lastName}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formUpdateData.email}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formUpdateData.password}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                  <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <select
+                    name="role"
+                    value={formUpdateData.role}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="ADMIN">Admin</option>
+                    
+                  </select>
+                </div>
+                <button
+                  onClick={handleUpdateUser}
+                  className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600"
+                >
+                  Update User
+                </button>
+              </form>
+                
+              </div>
+            )}
+
           </div>
         )}
 
