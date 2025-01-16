@@ -3,14 +3,15 @@ package com.team.project.manager.controller;
 import com.team.project.manager.auth.AuthenticationRequest;
 import com.team.project.manager.auth.AuthenticationResponse;
 import com.team.project.manager.auth.RegisterRequest;
+import com.team.project.manager.entity.User;
+import com.team.project.manager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.team.project.manager.auth.*;
 import com.team.project.manager.service.*;
+
+import java.util.Optional;
 
 
 @RestController
@@ -19,6 +20,7 @@ import com.team.project.manager.service.*;
 public class AuthenticationController {
 
     private final AuthenticationService service;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse>  register(@RequestBody RegisterRequest request){
@@ -32,6 +34,16 @@ public class AuthenticationController {
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse>  authenticate(@RequestBody AuthenticationRequest request){
         return ResponseEntity.ok(service.authenticate(request));
+    }
+
+    @DeleteMapping("/delete/{user}")
+    public ResponseEntity<String> delete(@PathVariable("user") User user){
+        if(userRepository.findByEmail(user.getEmail()).isPresent()){
+            this.service.delete(user);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+
     }
 
     @PostMapping("/logout")
