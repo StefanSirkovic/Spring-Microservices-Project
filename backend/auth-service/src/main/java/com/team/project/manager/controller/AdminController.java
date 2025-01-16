@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.team.project.manager.repository.UserRepository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -19,8 +21,10 @@ public class AdminController {
     private final UserRepository repository;
 
     @GetMapping("/dashboard")
-    public List<User> getAdminDashboard() {
+    public ResponseEntity<Map<String, Object>> getAdminDashboard() {
         List<User> users = repository.findAll();
-        return users;
+        Map<String, Object> response = new HashMap<>();
+        response.put("users", users);
+        return ResponseEntity.ok(response);
     }
 }
