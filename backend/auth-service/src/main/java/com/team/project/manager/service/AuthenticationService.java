@@ -77,6 +77,30 @@ public class AuthenticationService {
     public void delete(User user) {
             this.userRepository.delete(user);
     }
+
+
+    public AuthenticationResponse update(User user, RegisterRequest request) {
+
+        if(userRepository.findByEmail(request.getEmail()).isPresent())
+            throw new IllegalArgumentException("Email already exists");
+
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(request.getRole());
+
+        if(request.getRole()==null)
+            throw new IllegalArgumentException("Role must be provided");
+
+        repository.save(user);
+
+        var jwtToken = jwtService.generateToken(user);
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+
+    }
 }
 
 

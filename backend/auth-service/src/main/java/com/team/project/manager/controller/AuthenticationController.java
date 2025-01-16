@@ -43,13 +43,16 @@ public class AuthenticationController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
-
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?>  logout(){
-        return ResponseEntity.ok("Logged out successfully");
+    @PutMapping("/update/{user}")
+    public ResponseEntity<AuthenticationResponse> update(@PathVariable("user") User user,
+    @RequestBody RegisterRequest request){
+       try{
+           return ResponseEntity.ok(service.update(user, request));
+       }catch(IllegalArgumentException e){
+           return ResponseEntity.badRequest().body(new AuthenticationResponse(e.getMessage()));
+       }
     }
-
 
 }
