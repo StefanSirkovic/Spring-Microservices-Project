@@ -1,9 +1,12 @@
 package com.team.project.manager.controller;
 
 import com.team.project.manager.entity.User;
+import com.team.project.manager.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,12 +22,11 @@ import java.util.Map;
 public class AdminController {
 
     private final UserRepository repository;
+    private final AuthenticationService service;
 
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getAdminDashboard() {
-        List<User> users = repository.findAll();
-        Map<String, Object> response = new HashMap<>();
-        response.put("users", users);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(service.adminDashboard());
     }
+
 }

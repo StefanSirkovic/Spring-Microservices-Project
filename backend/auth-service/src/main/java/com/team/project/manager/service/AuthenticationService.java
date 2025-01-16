@@ -12,6 +12,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -53,6 +57,7 @@ public class AuthenticationService {
                 )
         );
 
+
         var user = repository.findByEmail(request.getEmail())
                 .orElseThrow();
 
@@ -62,5 +67,14 @@ public class AuthenticationService {
                 .build();
     }
 
+    public Map<String,Object> adminDashboard(){
+        List<User> users = userRepository.findAll();
+        Map<String,Object> response = new HashMap<>();
+        response.put("users",users);
+        return response;
+    }
+
 }
+
+
 
