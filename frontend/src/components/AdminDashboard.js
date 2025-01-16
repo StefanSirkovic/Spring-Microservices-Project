@@ -106,6 +106,7 @@ const AdminDashboard = () => {
         toast.success("User successfully deleted!");
         setUsers(users.filter((user) => user.id !== selectedUser));
         setSelectedUser(null);
+        window.location.reload();
       } else {
         const errorText = await response.text();
         toast.error(errorText || "Deletion failed.");
