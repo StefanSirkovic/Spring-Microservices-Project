@@ -182,7 +182,6 @@ const AdminDashboard = () => {
     }
   };
   
-
   useEffect(() => {
     fetch("http://localhost:8080/admin/dashboard", {
       method: "GET",
@@ -193,6 +192,64 @@ const AdminDashboard = () => {
       .catch((err) => console.error("Error fetching Admin Dashboard:", err));
   }, []);
 
+
+
+
+ // State za dodavanje tima
+ const [teamData, setTeamData] = useState({ name: '', description: '', members: [] });
+
+ // State za listu timova
+// const [teams, setTeams] = useState([]);
+ 
+
+ // Funkcija za rukovanje unosom u formi
+ const handleTeamInputChange = (e) => {
+   const { name, value } = e.target;
+   setTeamData((prevData) => ({ ...prevData, [name]: value }));
+ };
+
+ // Funkcija za dodavanje tima
+ const handleAddTeam = (e) => {
+   e.preventDefault(); // Sprečava učitavanje stranice
+
+   // Kreiranje tima putem POST zahteva
+   fetch("http://localhost:8080/api/teams", {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json",
+       Authorization: `Bearer ${localStorage.getItem("token")}`,
+     },
+     body: JSON.stringify({
+       name: teamData.name,
+       description: teamData.description,
+       members: teamData.members,
+     }),
+   })
+     .then((res) => res.json())
+     .then((data) => {
+       //setTeams((prevTeams) => [...prevTeams, data]);
+       setTeamData({ name: '', description: '', members: [] }); // Resetovanje forme
+     })
+     .catch((err) => console.error("Error adding team:", err));
+ };
+ 
+ 
+
+ const [selectedMembers, setSelectedMembers] = useState([]);
+ const [isOpen, setIsOpen] = useState(false);
+
+ const handleToggle = () => setIsOpen(!isOpen);
+
+
+ const handleSelection = (userId) => {
+  setSelectedMembers((prevSelected) =>
+    prevSelected.includes(userId)
+      ? prevSelected.filter((id) => id !== userId)
+      : [...prevSelected, userId]
+  );
+};
+
+ 
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -494,7 +551,113 @@ const AdminDashboard = () => {
         {selectedSection === "teams" && (
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold mb-4">Team Management</h2>
-            <p>Feature under construction.</p>
+            <div className="flex gap-4">
+              <button
+                className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+                  selectedAction === "addTeam" && "ring ring-green-300"
+                }`}
+                onClick={() => handleAction("addTeam")}
+              >
+                Add Team
+              </button>
+              <button
+                className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
+                  selectedAction === "deleteTeam" && "ring ring-red-300"
+                }`}
+                onClick={() => handleAction("deleteTeam")}
+              >
+                Delete Team
+              </button>
+              <button
+                className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+                  selectedAction === "updateTeam" && "ring ring-yellow-300"
+                }`}
+                onClick={() => handleAction("updateTeam")}
+              >
+                Update Team
+              </button>
+          </div>
+
+               {/* Add Team Form */}
+               {selectedAction === "addTeam" && (
+  <form className="mt-6 space-y-4" onSubmit={handleAddTeam}>
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Team Name</label>
+    <input
+      type="text"
+      name="name"
+      value={teamData.name}
+      onChange={handleTeamInputChange}
+      className="block w-full px-4 py-2 border rounded"
+      required
+    />
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Team Description</label>
+    <textarea
+      name="description"
+      value={teamData.description}
+      onChange={handleTeamInputChange}
+      className="block w-full px-4 py-2 border rounded"
+      rows="4"
+      placeholder="Enter a brief description of the team"
+    />
+  </div>
+
+  <div>
+    <label className="block text-sm font-medium text-gray-700">Add Users to Team</label>
+    <div className="relative">
+      <button
+        onClick={handleToggle}
+        className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      >
+        {selectedMembers.length > 0
+          ? `${selectedMembers.length} selected`
+          : 'Select members'}
+      </button>
+
+      {isOpen && (
+        <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+          <div className="max-h-60 overflow-y-auto">
+            {users.map((user) => (
+              <label
+                key={user.id}
+                className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+              >
+                <input
+                  type="checkbox"
+                  value={user.id}
+                  checked={selectedMembers.includes(user.id)}
+                  onChange={() => handleSelection(user.id)}
+                  className="mr-2"
+                />
+                {user.firstName} {user.lastName}
+              </label>
+            ))}
+          </div>
+          <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+
+  <button
+    type="submit"
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+  >
+    Add Team
+  </button>
+</form>
+)}
+ 
           </div>
         )}
       </main>
