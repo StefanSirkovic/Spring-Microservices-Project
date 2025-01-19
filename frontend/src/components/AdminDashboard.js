@@ -211,7 +211,6 @@ const AdminDashboard = () => {
     );
   };
 
-
 const handleAddTeam = (e) => {
   e.preventDefault();
 
@@ -224,7 +223,7 @@ const handleAddTeam = (e) => {
     body: JSON.stringify({
       name: teamData.name,
       description: teamData.description,
-      members: selectedMembers,
+      userIds: selectedMembers,
       
     }),
   })
@@ -239,7 +238,7 @@ const handleAddTeam = (e) => {
       setTeamData({ name: '', description: '', members: [] });
       setSelectedMembers([]);
       setIsOpen(false);
-      toast.success("Team added successfully!");
+      toast.success("Team created successfully!");
     })
     .catch((err) => {
       console.error("Error adding team:", err);
@@ -561,7 +560,7 @@ const handleToggle = (e) => {
               }`}
               onClick={() => handleAction("addTeam")}
             >
-              Add Team
+              Create Team
             </button>
             <button
               className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
