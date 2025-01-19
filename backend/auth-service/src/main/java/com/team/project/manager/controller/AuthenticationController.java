@@ -56,7 +56,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/{id}/assign-team")
-    public ResponseEntity<User> assignTeam(@PathVariable Integer id, @RequestBody Integer teamId){
+    public ResponseEntity<User> assignTeam(@PathVariable("id") Integer id, @RequestBody Integer teamId){
         return ResponseEntity.ok(service.assignTeam(id, teamId));
     }
 

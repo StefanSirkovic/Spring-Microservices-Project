@@ -7,6 +7,7 @@ import com.team.project.manager.entity.Role;
 import com.team.project.manager.entity.User;
 import com.team.project.manager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

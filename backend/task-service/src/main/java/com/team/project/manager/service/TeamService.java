@@ -18,25 +18,28 @@ public class TeamService {
     private final RestTemplate restTemplate;
 
     public Team createTeam(TeamDto teamDto) {
-        Team team = new Team();
-        team.setName(teamDto.getName());
-        team.setDescription(teamDto.getDescription());
 
         if(teamRepository.findByName(teamDto.getName()).isPresent())
             throw new IllegalArgumentException("Team already exists");
+        Team team = new Team();
+        team.setName(teamDto.getName());
+        team.setDescription(teamDto.getDescription());
+        team = teamRepository.save(team);
 
-        for(int userId : teamDto.getUserIds()){
-            if(teamDto.getUserIds()==null){
+        for(Integer userId : teamDto.getUserIds()){
+            if(teamDto.getUserIds()==null || teamDto.getUserIds().isEmpty()){
                 throw new IllegalArgumentException("User id is null");
             }
-            String userServiceUrl = "http://auth-service/auth/" + userId + "/assign-team";
+            if(userId ==null)
+                throw new IllegalArgumentException("User id is null");
+
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/assign-team";
             try {
                 restTemplate.put(userServiceUrl, team.getId());
             } catch (Exception e) {
                 throw new IllegalArgumentException("Error while saving team");
             }
         }
-        team = teamRepository.save(team);
         return team;
     }
 }
