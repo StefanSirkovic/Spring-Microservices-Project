@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import com.team.project.manager.config.WebConfig;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/teams")
@@ -27,6 +29,14 @@ public class TeamController {
         return ResponseEntity.ok(teamService.createTeam(teamDto));
     }
 
+    @GetMapping
+    public ResponseEntity<List<Team>> getAllTeams() {
+        return ResponseEntity.ok(teamService.getAllTeams());
+    }
 
+    @DeleteMapping("/delete/{team}")
+    public ResponseEntity<String> deleteTeam(@PathVariable("team") Team team) {
+          return this.teamService.deleteTeamService(team);
+    }
 
 }

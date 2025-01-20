@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TeamService {
@@ -41,5 +43,26 @@ public class TeamService {
             }
         }
         return team;
+    }
+
+    public List<Team> getAllTeams() {
+        List<Team> teams = teamRepository.findAll();
+        return teams;
+    }
+
+    public ResponseEntity<String> deleteTeamService(Team team) {
+        if(teamRepository.findByName(team.getName()).isPresent()) {
+            Integer teamId = team.getId();
+            String userServiceUrl = "http://localhost:8080/auth/" + teamId + "/delete-team";
+            try {
+                restTemplate.delete(userServiceUrl);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error while deleting team");
+            }
+
+            this.teamRepository.delete(team);
+            return ResponseEntity.ok("Team deleted successfully");
+        }
+        return ResponseEntity.notFound().build();
     }
 }
