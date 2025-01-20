@@ -65,4 +65,26 @@ public class TeamService {
         }
         return ResponseEntity.notFound().build();
     }
+
+    public Team addTeamMembers(TeamDto teamDto) {
+
+        Team team = teamRepository.findByName(teamDto.getName()).get();
+
+        for(Integer userId : teamDto.getUserIds()){
+            if(teamDto.getUserIds()==null || teamDto.getUserIds().isEmpty()){
+                throw new IllegalArgumentException("User id is null");
+            }
+            if(userId ==null)
+                throw new IllegalArgumentException("User id is null");
+
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/team-member";
+            try {
+                restTemplate.put(userServiceUrl, team.getId());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error while saving team");
+            }
+        }
+        team = teamRepository.save(team);
+        return team;
+    }
 }

@@ -39,4 +39,9 @@ public class TeamController {
           return this.teamService.deleteTeamService(team);
     }
 
+    @PostMapping("/add-members")
+    public ResponseEntity<Team> addMembers(@RequestBody TeamDto teamDto) {
+        return ResponseEntity.ok(teamService.addTeamMembers(teamDto));
+    }
+
 }

@@ -127,6 +127,14 @@ public class AuthenticationService {
         }
         return ResponseEntity.ok("No users in the team");
     }
+
+    public User addMembers(Integer id, Integer teamId) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTeamId(teamId);
+        userRepository.save(user);
+        return user;
+    }
 }
 
 
