@@ -113,6 +113,20 @@ public class AuthenticationService {
         return user;
     }
 
+    public ResponseEntity<String> deleteTeam(Integer teamId) {
+        if(!userRepository.findByTeamId(teamId).isEmpty()){
+            List<User> userList = userRepository.findAll();
+            for(User user : userList){
+                if(user.getTeamId()!=null && user.getTeamId().equals(teamId)) {
+                    user.setTeamId(null);
+                    userRepository.save(user);
+
+                }
+            }
+            return ResponseEntity.ok("Team deleted successfully");
+        }
+        return ResponseEntity.ok("No users in the team");
+    }
 }
 
 

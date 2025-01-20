@@ -60,4 +60,9 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.assignTeam(id, teamId));
     }
 
+    @DeleteMapping("/{id}/delete-team")
+    public ResponseEntity<String> deleteTeam(@PathVariable("id") Integer id){
+        return this.service.deleteTeam(id);
+    }
+
 }
