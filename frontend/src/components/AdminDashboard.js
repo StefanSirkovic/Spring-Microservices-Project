@@ -234,6 +234,12 @@ const handleAddTeam = (e) => {
       return res.json();
     })
     .then(() => {
+
+      fetch("http://localhost:8082/teams")
+      .then((res) => res.json())
+      .then((data) => setTeams(data))
+      .catch((err) => console.error("Error fetching teams:", err));
+
       setSelectedAction(null);
       setTeamData({ name: '', description: '', members: [] });
       setSelectedMembers([]);
@@ -245,13 +251,58 @@ const handleAddTeam = (e) => {
       toast.error("Error adding team. Please try again.");
     });
     
-    
-};
+  };
 
-const handleToggle = (e) => {
-  e.stopPropagation();
-  setIsOpen(!isOpen);
-};
+    const handleToggle = (e) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+    };
+
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
+
+  useEffect(() => {
+    fetch("http://localhost:8082/teams")
+      .then((res) => res.json())
+      .then((data) => setTeams(data))
+      .catch((err) => console.error("Error fetching teams:", err));
+        }, []);
+
+
+  const handleDeleteTeam = () => {
+    if (!selectedTeam) {
+      toast.error("Please select a team to delete.");
+      return;
+      }
+
+    fetch(`http://localhost:8082/teams/delete/${selectedTeam}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+       },
+      })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to delete team.");
+          }
+        toast.success("Team deleted successfully!");
+        setTeams(teams.filter((team) => team.id !== selectedTeam));
+        setSelectedTeam("");
+        
+        fetch("http://localhost:8082/teams")
+        .then((res) => res.json())
+        .then((data) => setTeams(data))
+        .catch((err) => console.error("Error fetching teams:", err));
+       
+        })
+      .catch((err) => {
+        console.error("Error deleting team:", err);
+        toast.error("Error deleting team. Please try again.");
+        });
+    };
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -658,7 +709,34 @@ const handleToggle = (e) => {
                 Add Team
               </button>
             </form>
-)}
+          )}
+
+        {/* Delete Team Section */}
+        {selectedAction === "deleteTeam" && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold">Select Team to Delete</h3>
+                <select
+                  value={selectedTeam || ""}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a team
+                  </option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleDeleteTeam}
+                  className="bg-red-500 text-white px-4 py-2 mt-4 rounded hover:bg-red-600"
+                >
+                  Delete Team
+                </button>
+              </div>
+            )}
  
           </div>
         )}
