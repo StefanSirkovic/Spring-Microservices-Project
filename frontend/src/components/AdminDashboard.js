@@ -224,7 +224,6 @@ const handleAddTeam = (e) => {
       name: teamData.name,
       description: teamData.description,
       userIds: selectedMembers,
-      
     }),
   })
     .then((res) => {
@@ -234,7 +233,6 @@ const handleAddTeam = (e) => {
       return res.json();
     })
     .then(() => {
-
       fetch("http://localhost:8082/teams")
       .then((res) => res.json())
       .then((data) => setTeams(data))
@@ -301,8 +299,64 @@ const handleAddTeam = (e) => {
         });
     };
 
+    const [selectedTeamForMembers, setSelectedTeamForMembers] = useState(null);
+    const [selectedTeamUsers, setSelectedTeamUsers] = useState([]);
+    const [isMembersOpen, setIsMembersOpen] = useState(false);
 
+    useEffect(() => {
+      fetch("http://localhost:8082/teams")
+        .then((res) => res.json())
+        .then((data) => setTeams(data))
+        .catch((err) => console.error("Error fetching teams:", err));
+          }, []);
 
+          const handleToggleMembers = () => {
+            setIsMembersOpen(!isMembersOpen);
+          };
+
+          const handleSelectionTeamMembers = (userId) => {
+            if (selectedTeamUsers.includes(userId)) {
+              setSelectedTeamUsers(selectedTeamUsers.filter((id) => id !== userId));
+            } else {
+              setSelectedTeamUsers([...selectedTeamUsers, userId]);
+            }
+          };
+          
+          const handleAddMembersToTeam = async () => {
+            if (!selectedTeamForMembers || selectedTeamUsers.length === 0) {
+              alert("Please select a team and at least one member.");
+              return;
+            }
+          
+            try {
+              const response = await fetch("http://localhost:8082/teams/add-members", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  name: selectedTeamForMembers,
+                  userIds: selectedTeamUsers,
+                }),
+              });
+          
+              if (response.ok) {
+                toast.success("Members added successfully!");
+                setSelectedTeamUsers([]);
+                setIsMembersOpen(false);
+                setSelectedAction(null);
+
+              } else {
+                const errorData = await response.json();
+                toast.error(`Error: ${errorData.message}`);
+              }
+            } catch (error) {
+              console.error("Error adding members:", error);
+              toast.error("An error occurred. Please try again.");
+            }
+          };
+          
+          
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -622,12 +676,12 @@ const handleAddTeam = (e) => {
               Delete Team
             </button>
             <button
-              className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
-                selectedAction === "updateTeam" && "ring ring-yellow-300"
+              className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
+                selectedAction === "addTeamMember" && "ring ring-indigo-300"
               }`}
-              onClick={() => handleAction("updateTeam")}
+              onClick={() => handleAction("addTeamMember")}
             >
-              Update Team
+              Add Team Member
             </button>
           </div>
       
@@ -737,7 +791,80 @@ const handleAddTeam = (e) => {
                 </button>
               </div>
             )}
- 
+
+           {/* Add Team Member Section */}
+          {selectedAction === "addTeamMember" && (
+          <div className="mt-6">
+          <h3 className="text-lg font-bold">Select Team to Add Member</h3>
+          <select
+          value={selectedTeamForMembers || ""}
+          onChange={(e) => setSelectedTeamForMembers(e.target.value)}
+          className="block w-full px-4 py-2 border rounded mt-2"
+           >
+          <option value="" disabled>
+            Select a team
+          </option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.name}>
+              {team.name}
+            </option>
+          ))}
+        </select>
+
+    <div className="mt-5 mb-5">
+      <label className="block mt-5 text-sm font-medium text-gray-700">
+        Add Members to Team
+      </label>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={handleToggleMembers}
+          className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          {selectedTeamUsers.length > 0
+            ? `${selectedTeamUsers.length} selected`
+            : "Select members"}
+        </button>
+
+        {isMembersOpen && (
+          <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+            <div className="max-h-60 overflow-y-auto">
+              {users.map((user) => (
+                <label
+                  key={user.id}
+                  className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                >
+                  <input
+                    type="checkbox"
+                    value={user.id}
+                    checked={selectedTeamUsers.includes(user.id)}
+                    onChange={() => handleSelectionTeamMembers(user.id)}
+                    className="mr-2"
+                  />
+                  {user.firstName} {user.lastName}
+                </label>
+              ))}
+            </div>
+            <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+              <button
+                onClick={() => setIsMembersOpen(false)}
+                className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+    <button
+      onClick={handleAddMembersToTeam}
+      className="bg-indigo-500 text-white px-4 py-2 mt-4 rounded hover:bg-indigo-600"
+    >
+      Add Team Member
+    </button>
+  </div>
+)}
           </div>
         )}
       </main>
