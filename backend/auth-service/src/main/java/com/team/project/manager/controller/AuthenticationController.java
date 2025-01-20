@@ -65,4 +65,9 @@ public class AuthenticationController {
         return this.service.deleteTeam(id);
     }
 
+    @PutMapping("/{id}/team-member")
+    public ResponseEntity<User> addMembers(@PathVariable("id") Integer id, @RequestBody Integer teamId){
+        return ResponseEntity.ok(service.addMembers(id, teamId));
+    }
+
 }
