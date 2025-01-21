@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import '../App.css';
 
 const AdminDashboard = () => {
   const [selectedSection, setSelectedSection] = useState("users");
@@ -272,7 +273,9 @@ const handleAddTeam = (e) => {
       toast.error("Please select a team to delete.");
       return;
       }
-
+      if (!window.confirm("Are you sure you want to delete this team?")) 
+        return;
+      
     fetch(`http://localhost:8082/teams/delete/${selectedTeam}`, {
       method: "DELETE",
       headers: {
@@ -324,7 +327,7 @@ const handleAddTeam = (e) => {
           
           const handleAddMembersToTeam = async () => {
             if (!selectedTeamForMembers || selectedTeamUsers.length === 0) {
-              alert("Please select a team and at least one member.");
+              toast.error("Please select a team and at least one member.");
               return;
             }
           
@@ -355,9 +358,86 @@ const handleAddTeam = (e) => {
               toast.error("An error occurred. Please try again.");
             }
           };
-          
-          
 
+          const [teamsMembers, setTeamsMembers] = useState([]);
+          const [selectedTeamName, setSelectedTeamName] = useState("");
+          const [teamUsers, setTeamUsers] = useState([]);
+          const [selectedUsers, setSelectedUsers] = useState([]);
+          const [isMembersOpenRemove, setIsMembersOpenRemove] = useState(false);
+
+          useEffect(() => {
+            const fetchTeams = async () => {
+              try {
+                const response = await fetch("http://localhost:8082/teams");
+                if (!response.ok) {
+                  throw new Error("Failed to fetch teams");
+                }
+                const data = await response.json();
+                setTeamsMembers(data);
+              } catch (error) {
+                console.error("Error fetching teams:", error);
+              }
+            };
+            fetchTeams();
+          }, []);
+
+          useEffect(() => {
+            const fetchTeamUsers = async () => {
+              if (!selectedTeamName) return;
+              try {
+                const response = await fetch(`http://localhost:8082/teams/members/${selectedTeamName}`, {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                   }
+                });
+                if (!response.ok) {
+                  throw new Error("Failed to fetch team users");
+                }
+                const data = await response.json();
+                console.log(data);
+                setTeamUsers(data);
+              } catch (error) {
+                console.error("Error fetching team users:", error);
+              }
+            };
+            fetchTeamUsers();
+          }, [selectedTeamName]);
+
+          const handleTeamSelectionForRemoval = (teamId) => {
+            setSelectedTeamName(teamId);
+            setSelectedUsers([]);
+          };
+          
+          const handleSelectionTeamMembersRemove = (userId) => {
+            setSelectedUsers((prevSelectedUsers) =>
+              prevSelectedUsers.includes(userId)
+                ? prevSelectedUsers.filter((id) => id !== userId)
+                : [...prevSelectedUsers, userId] 
+            );
+          };
+
+          const handleRemoveMembersFromTeam = async () => {
+            try {
+              const response = await fetch(`/api/teams/${selectedTeamName}/users`, {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ userIds: selectedUsers }),
+              });
+              if (!response.ok) {
+                throw new Error("Failed to remove members");
+              }
+              const updatedUsers = await response.json();
+              setTeamUsers(updatedUsers);
+              setSelectedUsers([]);
+              alert("Members removed successfully!");
+            } catch (error) {
+              console.error("Error removing members:", error);
+            }
+          };
+        
+          const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ToastContainer for alerts */}
@@ -378,39 +458,70 @@ const handleAddTeam = (e) => {
         <div className="container mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
 
-          <nav>
-            <button
-              className={`px-4 py-2 rounded ${
-                selectedSection === "users"
-                  ? "bg-blue-500"
-                  : "bg-blue-700 hover:bg-blue-500"
-              }`}
-              onClick={() => {
-                setSelectedSection("users");
-                setSelectedAction(null);
-              }}
+          {/* Hamburger Icon */}
+          <button
+            className="lg:hidden text-white focus:outline-none"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              Manage Users
-            </button>
-            <button
-              className={`ml-4 px-4 py-2 rounded ${
-                selectedSection === "teams"
-                  ? "bg-blue-500"
-                  : "bg-blue-700 hover:bg-blue-500"
-              }`}
-              onClick={() => {
-                setSelectedSection("teams");
-                setSelectedAction(null);
-              }}
-            >
-              Manage Teams
-            </button>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white py-2 px-4 ml-5 rounded-lg hover:bg-red-600"
-            >
-              Logout
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
+            </svg>
+          </button>
+
+          {/* Navigation Links */}
+          <nav
+            className={`${
+              menuOpen ? "block" : "hidden"
+            } fixed top-0 right-0 w-48 bg-blue-600 text-white p-4 space-y-4 lg:flex lg:space-x-4 lg:w-auto lg:static lg:flex-row lg:items-center`}
+          >
+            <div className="flex lg:flex-row flex-col items-center lg:space-x-4 space-y-4 lg:space-y-0">
+              <button
+                className={`px-4 py-2 rounded text-center ${
+                  selectedSection === "users"
+                    ? "bg-blue-500"
+                    : "bg-blue-700 hover:bg-blue-500"
+                } transition-all duration-300 ease-in-out text-sm`}
+                onClick={() => {
+                  setSelectedSection("users");
+                  setSelectedAction(null);
+                  setMenuOpen(false); // Zatvara meni kada se klikne
+                }}
+              >
+                Manage Users
+              </button>
+              <button
+                className={`px-4 py-2 rounded text-center ${
+                  selectedSection === "teams"
+                    ? "bg-blue-500"
+                    : "bg-blue-700 hover:bg-blue-500"
+                } transition-all duration-300 ease-in-out text-sm`}
+                onClick={() => {
+                  setSelectedSection("teams");
+                  setSelectedAction(null);
+                  setMenuOpen(false); // Zatvara meni kada se klikne
+                }}
+              >
+                Manage Teams
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 text-sm"
+              >
+                <span className="mr-2">Logout</span>
+                <img src="/logout.png" alt="logout" />
+              </button>
+            </div>
           </nav>
         </div>
       </header>
@@ -420,32 +531,33 @@ const handleAddTeam = (e) => {
         {selectedSection === "users" && (
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold mb-4">User Management</h2>
-            <div className="flex gap-4">
-              <button
-                className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
-                  selectedAction === "addUser" && "ring ring-green-300"
-                }`}
-                onClick={() => handleAction("addUser")}
-              >
-                Add User
-              </button>
-              <button
-                className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
-                  selectedAction === "deleteUser" && "ring ring-red-300"
-                }`}
-                onClick={() => handleAction("deleteUser")}
-              >
-                Delete User
-              </button>
-              <button
-                className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
-                  selectedAction === "updateUser" && "ring ring-yellow-300"
-                }`}
-                onClick={() => handleAction("updateUser")}
-              >
-                Update User
-              </button>
-            </div>
+            <div className="flex flex-wrap gap-4 justify-start">
+          <button
+            className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+              selectedAction === "addUser" && "ring ring-green-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("addUser")}
+          >
+            Add User
+          </button>
+          <button
+            className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
+              selectedAction === "deleteUser" && "ring ring-red-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("deleteUser")}
+          >
+            Delete User
+          </button>
+          <button
+            className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+              selectedAction === "updateUser" && "ring ring-yellow-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("updateUser")}
+          >
+            Update User
+          </button>
+        </div>
+
 
             {/* Add User Form */}
             {selectedAction === "addUser" && (
@@ -658,32 +770,43 @@ const handleAddTeam = (e) => {
         {selectedSection === "teams" && (
           <div className="bg-white p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold mb-4">Team Management</h2>
-          <div className="flex gap-4">
-            <button type="button"
-              className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
-                selectedAction === "addTeam" && "ring ring-green-300"
-              }`}
-              onClick={() => handleAction("addTeam")}
-            >
-              Create Team
-            </button>
-            <button
-              className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
-                selectedAction === "deleteTeam" && "ring ring-red-300"
-              }`}
-              onClick={() => handleAction("deleteTeam")}
-            >
-              Delete Team
-            </button>
-            <button
-              className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
-                selectedAction === "addTeamMember" && "ring ring-indigo-300"
-              }`}
-              onClick={() => handleAction("addTeamMember")}
-            >
-              Add Team Member
-            </button>
-          </div>
+          <div className="flex flex-wrap gap-4 justify-start">
+  <button
+    type="button"
+    className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+      selectedAction === "addTeam" && "ring ring-green-300"
+    } w-full sm:w-auto`}
+    onClick={() => handleAction("addTeam")}
+  >
+    Create Team
+  </button>
+  <button
+    className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
+      selectedAction === "deleteTeam" && "ring ring-red-300"
+    } w-full sm:w-auto`}
+    onClick={() => handleAction("deleteTeam")}
+  >
+    Delete Team
+  </button>
+  <button
+    className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
+      selectedAction === "addTeamMember" && "ring ring-indigo-300"
+    } w-full sm:w-auto`}
+    onClick={() => handleAction("addTeamMember")}
+  >
+    Add Team Member
+  </button>
+  <button
+    className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+      selectedAction === "removeTeamMember" && "ring ring-yellow-300"
+    } w-full sm:w-auto`}
+    onClick={() => handleAction("removeTeamMember")}
+  >
+    Remove Team Member
+  </button>
+</div>
+
+
       
           {/* Add Team Form */}
           {selectedAction === "addTeam" && (
@@ -864,9 +987,85 @@ const handleAddTeam = (e) => {
       Add Team Member
     </button>
   </div>
-)}
+  )}
+
+  {/* Remove Team Member Section */}
+  {selectedAction === "removeTeamMember" && (
+          <div className="mt-6">
+          <h3 className="text-lg font-bold">Select Team to Remove Member</h3>
+              <select
+      value={selectedTeamName || ""}
+      onChange={(e) => handleTeamSelectionForRemoval(e.target.value)}
+      className="block w-full px-4 py-2 border rounded mt-2">
+      <option value="" disabled>
+        Select a team
+      </option>
+      {teamsMembers.map((team) => (
+        <option key={team.id} value={team.name}>
+          {team.name}
+        </option>
+      ))}
+    </select>
+
+
+    <div className="mt-5 mb-5">
+      <label className="block mt-5 text-sm font-medium text-gray-700">
+        Remove Members from Team
+      </label>
+      <div className="relative">
+  <button
+    type="button"
+    onClick={() => setIsMembersOpenRemove(!isMembersOpenRemove)}
+    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  >
+    {selectedUsers.length > 0
+      ? `${selectedUsers.length} selected`
+      : "Select members"}
+  </button>
+
+  {isMembersOpenRemove && (
+    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+      <div className="max-h-60 overflow-y-auto">
+        {teamUsers.map((user) => (
+          <label
+            key={user.id}
+            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+          >
+            <input
+              type="checkbox"
+              value={user.id}
+              checked={selectedUsers.includes(user.id)}
+              onChange={() => handleSelectionTeamMembersRemove(user.id)}
+              className="mr-2"
+            />
+            {user.firstName} {user.lastName}
+          </label>
+        ))}
+      </div>
+      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+        <button
+          onClick={() => setIsMembersOpenRemove(false)}
+          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
+    </div>
+    <button
+      onClick={handleRemoveMembersFromTeam}
+      className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600">
+      Remove Team Member
+    </button>
+  </div>
+  )}
           </div>
         )}
+
+        
       </main>
     </div>
   );
