@@ -135,6 +135,14 @@ public class AuthenticationService {
         userRepository.save(user);
         return user;
     }
+
+    public List<User> getMembers(Integer teamId) {
+        List<User> users = userRepository.findAllByTeamId(teamId);
+        if(users.isEmpty())
+            throw new RuntimeException("No users found for teamId: " + teamId);
+
+        return users;
+    }
 }
 
 

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.team.project.manager.auth.*;
 import com.team.project.manager.service.*;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -68,6 +69,11 @@ public class AuthenticationController {
     @PutMapping("/{id}/team-member")
     public ResponseEntity<User> addMembers(@PathVariable("id") Integer id, @RequestBody Integer teamId){
         return ResponseEntity.ok(service.addMembers(id, teamId));
+    }
+
+    @GetMapping("/{id}/get-member")
+    public ResponseEntity<List<User>> getMembers(@PathVariable("id") Integer teamId){
+        return ResponseEntity.ok(service.getMembers(teamId));
     }
 
 }

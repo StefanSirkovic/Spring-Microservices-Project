@@ -1,6 +1,7 @@
 package com.team.project.manager.controller;
 
 import com.team.project.manager.dto.TeamDto;
+import com.team.project.manager.dto.UserDto;
 import com.team.project.manager.entity.Team;
 import com.team.project.manager.repository.TeamRepository;
 import com.team.project.manager.service.TeamService;
@@ -42,6 +43,12 @@ public class TeamController {
     @PostMapping("/add-members")
     public ResponseEntity<Team> addMembers(@RequestBody TeamDto teamDto) {
         return ResponseEntity.ok(teamService.addTeamMembers(teamDto));
+    }
+
+    @GetMapping("/members/{name}")
+    public ResponseEntity<List<UserDto>> getMembers(@PathVariable("name") String name) {
+        List<UserDto> users = teamService.getTeamMembers(name);
+        return ResponseEntity.ok(teamService.getTeamMembers(name));
     }
 
 }
