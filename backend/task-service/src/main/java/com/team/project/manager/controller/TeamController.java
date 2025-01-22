@@ -51,4 +51,10 @@ public class TeamController {
         return ResponseEntity.ok(teamService.getTeamMembers(name));
     }
 
+    @DeleteMapping("/remove/{name}")
+    public ResponseEntity<List<UserDto>> removeMembers(@PathVariable("name") String name, @RequestBody TeamDto teamDto){
+        List<UserDto> users = teamService.removeMember(name, teamDto);
+        return ResponseEntity.ok(teamService.removeMember(name, teamDto));
+    }
+
 }

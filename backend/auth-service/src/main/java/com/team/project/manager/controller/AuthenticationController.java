@@ -71,9 +71,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.addMembers(id, teamId));
     }
 
-    @GetMapping("/{id}/get-member")
-    public ResponseEntity<List<User>> getMembers(@PathVariable("id") Integer teamId){
+    @GetMapping("/{teamId}/get-member")
+    public ResponseEntity<List<User>> getMembers(@PathVariable("teamId") Integer teamId){
         return ResponseEntity.ok(service.getMembers(teamId));
     }
+
+    @PutMapping("/{id}/remove-member")
+    public ResponseEntity<User> removeMember(@PathVariable("id") Integer id){
+        return ResponseEntity.ok(service.removeMembers(id));
+    }
+
 
 }

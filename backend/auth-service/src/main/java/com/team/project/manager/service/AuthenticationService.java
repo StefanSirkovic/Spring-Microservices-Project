@@ -138,10 +138,18 @@ public class AuthenticationService {
 
     public List<User> getMembers(Integer teamId) {
         List<User> users = userRepository.findAllByTeamId(teamId);
-        if(users.isEmpty())
-            throw new RuntimeException("No users found for teamId: " + teamId);
 
         return users;
+    }
+
+    public User removeMembers(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setTeamId(null);
+        userRepository.save(user);
+        return user;
+
     }
 }
 
