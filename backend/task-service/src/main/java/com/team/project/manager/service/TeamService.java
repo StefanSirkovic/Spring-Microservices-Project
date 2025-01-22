@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -102,8 +100,9 @@ public class TeamService {
                     UserDto[].class
             );
 
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return Arrays.asList(response.getBody());
+            if (response.getStatusCode().is2xxSuccessful()) {
+                UserDto[] users = response.getBody();
+                return (users != null && users.length > 0) ? Arrays.asList(users) : Collections.emptyList();
             } else {
                 throw new IllegalArgumentException("Failed to fetch team members from user service");
             }
@@ -112,8 +111,44 @@ public class TeamService {
         }
     }
 
+    public List<UserDto> removeMember(String name, TeamDto teamDto) {
+        Team team = teamRepository.findByName(name)
+                .orElseThrow(() -> new IllegalArgumentException("Team not found"));
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        List<UserDto> updatedUsers = new ArrayList<>();
+
+        List<UserDto> membersToRemove = new ArrayList<>();
+        for (Integer userId : teamDto.getUserIds()) {
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/remove-member";
+            try {
+                Map<String, Object> body = new HashMap<>();
+                body.put("teamId", null);
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+
+                ResponseEntity<UserDto> response = restTemplate.exchange(
+                        userServiceUrl,
+                        HttpMethod.PUT,
+                        entity,
+                        UserDto.class
+                );
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    updatedUsers.add(response.getBody());
+                } else {
+                    throw new IllegalArgumentException("Failed to remove teamId for user: " + userId);
+                }
+
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Error while removing team member: " + userId, e);
+            }
+        }
+
+        return membersToRemove;
     }
+
+}
 
 
 

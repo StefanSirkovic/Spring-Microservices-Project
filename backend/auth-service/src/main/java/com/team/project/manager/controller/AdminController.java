@@ -24,7 +24,9 @@ public class AdminController {
     private final UserRepository repository;
     private final AuthenticationService service;
 
+
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Map<String, Object>> getAdminDashboard() {
         return ResponseEntity.ok(service.adminDashboard());
     }
