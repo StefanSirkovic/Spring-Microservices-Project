@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -236,9 +236,12 @@ const handleAddTeam = (e) => {
     .then(() => {
       fetch("http://localhost:8082/teams")
       .then((res) => res.json())
-      .then((data) => setTeams(data))
+      .then((data) => {
+        setTeams(data); 
+        setTeamsMembers(data);
+      })
       .catch((err) => console.error("Error fetching teams:", err));
-
+      fetchTeamUsers();
       setSelectedAction(null);
       setTeamData({ name: '', description: '', members: [] });
       setSelectedMembers([]);
@@ -286,13 +289,17 @@ const handleAddTeam = (e) => {
         if (!res.ok) {
           throw new Error("Failed to delete team.");
           }
+        fetchTeamUsers(null);
         toast.success("Team deleted successfully!");
         setTeams(teams.filter((team) => team.id !== selectedTeam));
         setSelectedTeam("");
         
         fetch("http://localhost:8082/teams")
         .then((res) => res.json())
-        .then((data) => setTeams(data))
+        .then((data) => {
+          setTeams(data); 
+          setTeamsMembers(data);
+        })
         .catch((err) => console.error("Error fetching teams:", err));
        
         })
@@ -344,11 +351,20 @@ const handleAddTeam = (e) => {
               });
           
               if (response.ok) {
+                fetch("http://localhost:8082/teams")
+                .then((res) => res.json())
+                .then((data) => {
+                  setTeams(data); 
+                  setTeamsMembers(data);
+                })
+                .catch((err) => console.error("Error fetching teams:", err));
+
+                fetchTeamUsers(selectedTeamForMembers);
                 toast.success("Members added successfully!");
                 setSelectedTeamUsers([]);
                 setIsMembersOpen(false);
                 setSelectedAction(null);
-
+                
               } else {
                 const errorData = await response.json();
                 toast.error(`Error: ${errorData.message}`);
@@ -381,28 +397,29 @@ const handleAddTeam = (e) => {
             fetchTeams();
           }, []);
 
-          useEffect(() => {
-            const fetchTeamUsers = async () => {
-              if (!selectedTeamName) return;
+          
+            const fetchTeamUsers = useCallback(async (teamName) => {
+              if (!teamName) return;
               try {
-                const response = await fetch(`http://localhost:8082/teams/members/${selectedTeamName}`, {
+                const response = await fetch(`http://localhost:8082/teams/members/${teamName}`, {
                   headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
-                   }
+                  },
                 });
                 if (!response.ok) {
                   throw new Error("Failed to fetch team users");
                 }
                 const data = await response.json();
-                console.log(data);
                 setTeamUsers(data);
               } catch (error) {
                 console.error("Error fetching team users:", error);
               }
-            };
-            fetchTeamUsers();
-          }, [selectedTeamName]);
+            }, []);
 
+              useEffect(() => {
+              fetchTeamUsers(selectedTeamName);
+            }, [selectedTeamName, fetchTeamUsers]);
+          
           const handleTeamSelectionForRemoval = (teamId) => {
             setSelectedTeamName(teamId);
             setSelectedUsers([]);
@@ -417,11 +434,14 @@ const handleAddTeam = (e) => {
           };
 
           const handleRemoveMembersFromTeam = async () => {
+              if (!window.confirm("Are you sure you want to remove this member?")) 
+                return;
             try {
-              const response = await fetch(`/api/teams/${selectedTeamName}/users`, {
+              const response = await fetch(`http://localhost:8082/teams/remove/${selectedTeamName}`, {
                 method: "DELETE",
                 headers: {
                   "Content-Type": "application/json",
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
                 body: JSON.stringify({ userIds: selectedUsers }),
               });
@@ -431,13 +451,18 @@ const handleAddTeam = (e) => {
               const updatedUsers = await response.json();
               setTeamUsers(updatedUsers);
               setSelectedUsers([]);
-              alert("Members removed successfully!");
+              toast.success("Members removed successfully!");
+              setSelectedAction(null);
+              fetchTeamUsers();
+              window.location.reload();
             } catch (error) {
+              toast.error("Error removing members:", error);
               console.error("Error removing members:", error);
             }
           };
         
           const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ToastContainer for alerts */}
