@@ -520,7 +520,7 @@ const handleAddTeam = (e) => {
                 onClick={() => {
                   setSelectedSection("users");
                   setSelectedAction(null);
-                  setMenuOpen(false); // Zatvara meni kada se klikne
+                  setMenuOpen(false);
                 }}
               >
                 Manage Users
@@ -534,7 +534,7 @@ const handleAddTeam = (e) => {
                 onClick={() => {
                   setSelectedSection("teams");
                   setSelectedAction(null);
-                  setMenuOpen(false); // Zatvara meni kada se klikne
+                  setMenuOpen(false);
                 }}
               >
                 Manage Teams
@@ -792,44 +792,44 @@ const handleAddTeam = (e) => {
           </div>
         )}
 
-        {selectedSection === "teams" && (
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4">Team Management</h2>
-          <div className="flex flex-wrap gap-4 justify-start">
-  <button
-    type="button"
-    className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
-      selectedAction === "addTeam" && "ring ring-green-300"
-    } w-full sm:w-auto`}
-    onClick={() => handleAction("addTeam")}
-  >
-    Create Team
-  </button>
-  <button
-    className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
-      selectedAction === "deleteTeam" && "ring ring-red-300"
-    } w-full sm:w-auto`}
-    onClick={() => handleAction("deleteTeam")}
-  >
-    Delete Team
-  </button>
-  <button
-    className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
-      selectedAction === "addTeamMember" && "ring ring-indigo-300"
-    } w-full sm:w-auto`}
-    onClick={() => handleAction("addTeamMember")}
-  >
-    Add Team Member
-  </button>
-  <button
-    className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
-      selectedAction === "removeTeamMember" && "ring ring-yellow-300"
-    } w-full sm:w-auto`}
-    onClick={() => handleAction("removeTeamMember")}
-  >
-    Remove Team Member
-  </button>
-</div>
+              {selectedSection === "teams" && (
+                <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold mb-4">Team Management</h2>
+                <div className="flex flex-wrap gap-4 justify-start">
+        <button
+          type="button"
+          className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+            selectedAction === "addTeam" && "ring ring-green-300"
+          } w-full sm:w-auto`}
+          onClick={() => handleAction("addTeam")}
+        >
+          Create Team
+        </button>
+        <button
+          className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
+            selectedAction === "deleteTeam" && "ring ring-red-300"
+          } w-full sm:w-auto`}
+          onClick={() => handleAction("deleteTeam")}
+        >
+          Delete Team
+        </button>
+        <button
+          className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
+            selectedAction === "addTeamMember" && "ring ring-indigo-300"
+          } w-full sm:w-auto`}
+          onClick={() => handleAction("addTeamMember")}
+        >
+          Add Team Member
+        </button>
+        <button
+          className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+            selectedAction === "removeTeamMember" && "ring ring-yellow-300"
+          } w-full sm:w-auto`}
+          onClick={() => handleAction("removeTeamMember")}
+        >
+          Remove Team Member
+        </button>
+      </div>
 
 
       
@@ -940,160 +940,160 @@ const handleAddTeam = (e) => {
               </div>
             )}
 
-           {/* Add Team Member Section */}
-          {selectedAction === "addTeamMember" && (
-          <div className="mt-6">
-          <h3 className="text-lg font-bold">Select Team to Add Member</h3>
-          <select
-          value={selectedTeamForMembers || ""}
-          onChange={(e) => setSelectedTeamForMembers(e.target.value)}
-          className="block w-full px-4 py-2 border rounded mt-2"
-           >
+            {/* Add Team Member Section */}
+            {selectedAction === "addTeamMember" && (
+            <div className="mt-6">
+            <h3 className="text-lg font-bold">Select Team to Add Member</h3>
+            <select
+            value={selectedTeamForMembers || ""}
+            onChange={(e) => setSelectedTeamForMembers(e.target.value)}
+            className="block w-full px-4 py-2 border rounded mt-2"
+            >
+            <option value="" disabled>
+              Select a team
+            </option>
+            {teams.map((team) => (
+              <option key={team.id} value={team.name}>
+                {team.name}
+              </option>
+            ))}
+          </select>
+
+      <div className="mt-5 mb-5">
+        <label className="block mt-5 text-sm font-medium text-gray-700">
+          Add Members to Team
+        </label>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={handleToggleMembers}
+            className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            {selectedTeamUsers.length > 0
+              ? `${selectedTeamUsers.length} selected`
+              : "Select members"}
+          </button>
+
+          {isMembersOpen && (
+            <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+              <div className="max-h-60 overflow-y-auto">
+                {users.map((user) => (
+                  <label
+                    key={user.id}
+                    className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                  >
+                    <input
+                      type="checkbox"
+                      value={user.id}
+                      checked={selectedTeamUsers.includes(user.id)}
+                      onChange={() => handleSelectionTeamMembers(user.id)}
+                      className="mr-2"
+                    />
+                    {user.firstName} {user.lastName}
+                  </label>
+                ))}
+              </div>
+              <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+                <button
+                  onClick={() => setIsMembersOpen(false)}
+                  className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      <button
+        onClick={handleAddMembersToTeam}
+        className="bg-indigo-500 text-white px-4 py-2 mt-4 rounded hover:bg-indigo-600"
+      >
+        Add Team Member
+      </button>
+    </div>
+    )}
+
+      {/* Remove Team Member Section */}
+      {selectedAction === "removeTeamMember" && (
+              <div className="mt-6">
+              <h3 className="text-lg font-bold">Select Team to Remove Member</h3>
+                  <select
+          value={selectedTeamName || ""}
+          onChange={(e) => handleTeamSelectionForRemoval(e.target.value)}
+          className="block w-full px-4 py-2 border rounded mt-2">
           <option value="" disabled>
             Select a team
           </option>
-          {teams.map((team) => (
+          {teamsMembers.map((team) => (
             <option key={team.id} value={team.name}>
               {team.name}
             </option>
           ))}
         </select>
 
-    <div className="mt-5 mb-5">
-      <label className="block mt-5 text-sm font-medium text-gray-700">
-        Add Members to Team
-      </label>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={handleToggleMembers}
-          className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          {selectedTeamUsers.length > 0
-            ? `${selectedTeamUsers.length} selected`
-            : "Select members"}
-        </button>
 
-        {isMembersOpen && (
-          <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-            <div className="max-h-60 overflow-y-auto">
-              {users.map((user) => (
-                <label
-                  key={user.id}
-                  className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
-                >
-                  <input
-                    type="checkbox"
-                    value={user.id}
-                    checked={selectedTeamUsers.includes(user.id)}
-                    onChange={() => handleSelectionTeamMembers(user.id)}
-                    className="mr-2"
-                  />
-                  {user.firstName} {user.lastName}
-                </label>
-              ))}
-            </div>
-            <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
-              <button
-                onClick={() => setIsMembersOpen(false)}
-                className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-    <button
-      onClick={handleAddMembersToTeam}
-      className="bg-indigo-500 text-white px-4 py-2 mt-4 rounded hover:bg-indigo-600"
-    >
-      Add Team Member
-    </button>
-  </div>
-  )}
-
-  {/* Remove Team Member Section */}
-  {selectedAction === "removeTeamMember" && (
-          <div className="mt-6">
-          <h3 className="text-lg font-bold">Select Team to Remove Member</h3>
-              <select
-      value={selectedTeamName || ""}
-      onChange={(e) => handleTeamSelectionForRemoval(e.target.value)}
-      className="block w-full px-4 py-2 border rounded mt-2">
-      <option value="" disabled>
-        Select a team
-      </option>
-      {teamsMembers.map((team) => (
-        <option key={team.id} value={team.name}>
-          {team.name}
-        </option>
-      ))}
-    </select>
-
-
-    <div className="mt-5 mb-5">
-      <label className="block mt-5 text-sm font-medium text-gray-700">
-        Remove Members from Team
-      </label>
-      <div className="relative">
-  <button
-    type="button"
-    onClick={() => setIsMembersOpenRemove(!isMembersOpenRemove)}
-    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  >
-    {selectedUsers.length > 0
-      ? `${selectedUsers.length} selected`
-      : "Select members"}
-  </button>
-
-  {isMembersOpenRemove && (
-    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-      <div className="max-h-60 overflow-y-auto">
-        {teamUsers.map((user) => (
-          <label
-            key={user.id}
-            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
-          >
-            <input
-              type="checkbox"
-              value={user.id}
-              checked={selectedUsers.includes(user.id)}
-              onChange={() => handleSelectionTeamMembersRemove(user.id)}
-              className="mr-2"
-            />
-            {user.firstName} {user.lastName}
+        <div className="mt-5 mb-5">
+          <label className="block mt-5 text-sm font-medium text-gray-700">
+            Remove Members from Team
           </label>
-        ))}
-      </div>
-      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+          <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsMembersOpenRemove(!isMembersOpenRemove)}
+        className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+      >
+        {selectedUsers.length > 0
+          ? `${selectedUsers.length} selected`
+          : "Select members"}
+      </button>
+
+      {isMembersOpenRemove && (
+        <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+          <div className="max-h-60 overflow-y-auto">
+            {teamUsers.map((user) => (
+              <label
+                key={user.id}
+                className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+              >
+                <input
+                  type="checkbox"
+                  value={user.id}
+                  checked={selectedUsers.includes(user.id)}
+                  onChange={() => handleSelectionTeamMembersRemove(user.id)}
+                  className="mr-2"
+                />
+                {user.firstName} {user.lastName}
+              </label>
+            ))}
+          </div>
+          <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+            <button
+              onClick={() => setIsMembersOpenRemove(false)}
+              className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+
+        </div>
         <button
-          onClick={() => setIsMembersOpenRemove(false)}
-          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-        >
-          Done
+          onClick={handleRemoveMembersFromTeam}
+          className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600">
+          Remove Team Member
         </button>
       </div>
-    </div>
-  )}
-</div>
+      )}
+              </div>
+            )}
 
-    </div>
-    <button
-      onClick={handleRemoveMembersFromTeam}
-      className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600">
-      Remove Team Member
-    </button>
-  </div>
-  )}
-          </div>
-        )}
-
-        
-      </main>
-    </div>
-  );
-};
+            
+          </main>
+        </div>
+      );
+    };
 
 export default AdminDashboard;
