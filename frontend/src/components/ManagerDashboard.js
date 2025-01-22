@@ -1,20 +1,698 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import '../App.css';
 
 const ManagerDashboard = () => {
-  const [message, setMessage] = useState("");
+  const [selectedSection, setSelectedSection] = useState("projects");
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [formData, setFormData] = useState({
+    projectName: "",
+    projectDescription: "",
+    startDate: "",
+    endDate: "",
+    team: "",
+  });
+  
+  const [formUpdateData, setFormUpdateData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "MEMBER",
+  });
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProjectUpdate, setSelectedProjectUpdate] = useState(null);
 
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/");
+  };
+
+  const handleAction = (action) => {
+    setSelectedAction(action);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormUpdateData({ ...formUpdateData, [name]: value });
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!formData.projectName || !formData.projectDescription || !formData.startDate || !formData.endDate || !formData.team) {
+      toast.error("All fields are required.");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:8080/projects/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (response.ok) {
+        toast.success("Project successfully added!");
+  
+        
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setProjects(data.projects || []))
+          .catch((err) => console.error("Error fetching projects:", err));
+  
+        setFormData({
+          projectName: "",
+          projectDescription: "",
+          startDate: "",
+          endDate: "",
+          team: "",
+        });
+  
+        setSelectedAction(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Project creation failed.");
+      }
+    } catch (error) {
+      toast.error("Error creating project. Please try again.");
+      console.error("Error creating project:", error);
+    }
+  };
+  
+  const handleDeleteproject = async () => {
+    if (!selectedProject) {
+      toast.error("Please select a project to delete.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this project?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/auth/delete/${selectedProject}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (response.ok) {
+        toast.success("project successfully deleted!");
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setProjects(data.projects || []))
+          .catch((err) => console.error("Error fetching projects:", err));
+        setSelectedProject(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Deletion failed.");
+      }
+    } catch (error) {
+      toast.error("Error deleting project. Please try again.");
+      console.error("Error deleting project:", error);
+    }
+  };
+
+  const handleUpdateproject = async (e) => {
+    e.preventDefault();
+    if (!formUpdateData.firstName || !formUpdateData.lastName || !formUpdateData.email || !formUpdateData.password) {
+      toast.error("All fields are required.");
+      return;
+    }
+    try {
+      const response = await fetch(`http://localhost:8080/auth/update/${selectedProjectUpdate}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(formUpdateData),
+      });
+  
+      if (response.ok) {
+        toast.success("project successfully updated!", {
+          duration: 5000,
+        });
+  
+        fetch("http://localhost:8080/admin/dashboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        })
+          .then((res) => res.json())
+          .then((data) => setProjects(data.projects || []))
+          .catch((err) => console.error("Error fetching projects:", err));
+  
+  
+        setSelectedProjectUpdate(null);
+        setFormUpdateData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+          role: "MEMBER",
+        });
+        setSelectedAction(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Update failed.");
+      }
+    } catch (error) {
+      toast.error("Error updating project. Please try again.");
+      console.error("Error updating project:", error);
+    }
+  };
+  
   useEffect(() => {
-    fetch("http://localhost:8080/manager/dashboard", {
+    fetch("http://localhost:8080/admin/dashboard", {
+      method: "GET",
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     })
-      .then((res) => res.text())
-      .then(setMessage)
-      .catch((err) => console.error("Error fetching Manager Dashboard:", err));
+      .then((res) => res.json())
+      .then((data) => setProjects(data.projects || []))
+      .catch((err) => console.error("Error fetching Admin Dashboard:", err));
   }, []);
 
+
+  const [teamData, setTeamData] = useState({ name: '', description: '', members: [] });
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
+
+  
+  const handleTeamInputChange = (e) => {
+    const { name, value } = e.target;
+    setTeamData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSelection = (projectId) => {
+    setSelectedMembers((prevSelected) =>
+      prevSelected.includes(projectId)
+        ? prevSelected.filter((id) => id !== projectId)
+        : [...prevSelected, projectId]
+    );
+  };
+
+const handleAddTeam = (e) => {
+  e.preventDefault();
+
+  fetch("http://localhost:8082/teams/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+    body: JSON.stringify({
+      name: teamData.name,
+      description: teamData.description,
+      projectIds: selectedMembers,
+    }),
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error("Failed to add team");
+      }
+      return res.json();
+    })
+    .then(() => {
+      fetch("http://localhost:8082/teams")
+      .then((res) => res.json())
+      .then((data) => {
+      })
+      .catch((err) => console.error("Error fetching teams:", err));
+      setSelectedAction(null);
+      setTeamData({ name: '', description: '', members: [] });
+      setSelectedMembers([]);
+      setIsOpen(false);
+      toast.success("Team created successfully!");
+    })
+    .catch((err) => {
+      console.error("Error adding team:", err);
+      toast.error("Error adding team. Please try again.");
+    });
+    
+  };
+
+    const handleToggle = (e) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+    };
+
+  
+
+
+  
+        
+          const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div className="dashboard">
-      <h1>{message || "Manager Loading..."}</h1>
+    <div className="min-h-screen bg-gray-100">
+      {/* ToastContainer for alerts */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
+      {/* Header */}
+      <header className="bg-green-600 text-white p-4 shadow-md">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manager Dashboard</h1>
+
+          {/* Hamburger Icon */}
+          <button
+            className="lg:hidden text-white focus:outline-none"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
+            </svg>
+          </button>
+
+          {/* Navigation Links */}
+          <nav
+            className={`${
+              menuOpen ? "block" : "hidden"
+            } fixed top-0 right-0 w-48 bg-green-600 text-white p-4 space-y-4 lg:flex lg:space-x-4 lg:w-auto lg:static lg:flex-row lg:items-center`}
+          >
+            <div className="flex lg:flex-row flex-col items-center lg:space-x-4 space-y-4 lg:space-y-0">
+              <button
+                className={`px-4 py-2 rounded text-center ${
+                  selectedSection === "projects"
+                    ? "bg-green-500"
+                    : "bg-green-700 hover:bg-green-500"
+                } transition-all duration-300 ease-in-out text-sm`}
+                onClick={() => {
+                  setSelectedSection("projects");
+                  setSelectedAction(null);
+                  setMenuOpen(false);
+                }}
+              >
+                Manage Projects
+              </button>
+              <button
+                className={`px-4 py-2 rounded text-center ${
+                  selectedSection === "teams"
+                    ? "bg-green-500"
+                    : "bg-green-700 hover:bg-green-500"
+                } transition-all duration-300 ease-in-out text-sm`}
+                onClick={() => {
+                  setSelectedSection("teams");
+                  setSelectedAction(null);
+                  setMenuOpen(false);
+                }}
+              >
+                Team Statistics
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 text-sm"
+              >
+                <span className="mr-2">Logout</span>
+                <img src="/logout.png" alt="logout" />
+              </button>
+            </div>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto p-6">
+        {selectedSection === "projects" && (
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-4">Project Management</h2>
+            <div className="flex flex-wrap gap-4 justify-start">
+          <button
+            className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+              selectedAction === "addProject" && "ring ring-green-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("addProject")}
+          >
+            Add Project
+          </button>
+          <button
+            className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 ${
+              selectedAction === "deleteProject" && "ring ring-red-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("deleteProject")}
+          >
+            Delete Project
+          </button>
+          <button
+            className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
+              selectedAction === "monitorProgress" && "ring ring-yellow-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("monitorProgress")}
+          >
+            Progress Monitoring
+          </button>
+        </div>
+
+            {/* Add New Project Form */}
+            {selectedAction === "addProject" && (
+              <form className="mt-6 space-y-4" onSubmit={handleRegister}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Project Name
+                  </label>
+                  <input
+                    type="text"
+                    name="projectName"
+                    value={formData.projectName}
+                    onChange={handleInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Project Description
+                  </label>
+                  <textarea
+                    name="projectDescription"
+                    value={formData.projectDescription}
+                    onChange={handleInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    rows="4"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Start Date
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    End Date
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Team
+                  </label>
+                  <select
+                    name="team"
+                    value={formData.team}
+                    onChange={handleInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                  >
+                    <option value="">Select Team</option>
+                    {/* Ovo su primeri timova; zameni ih stvarnim timovima iz baze */}
+                    <option value="Team A">Team A</option>
+                    <option value="Team B">Team B</option>
+                    <option value="Team C">Team C</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Add Project
+                </button>
+              </form>
+            )}
+
+
+            {/* Delete Project Section */}
+            {selectedAction === "deleteProject" && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold">Select Project to Delete</h3>
+                <select
+                  value={selectedProject || ""}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a project
+                  </option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.firstName} {project.lastName}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleDeleteproject}
+                  className="bg-red-500 text-white px-4 py-2 mt-4 rounded hover:bg-red-600"
+                >
+                  Delete Project
+                </button>
+              </div>
+            )}
+
+            {/* Monitor Progress Section */}
+            {selectedAction === "monitorProgress" && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold">Select project to Update</h3>
+                <select
+                  value={selectedProjectUpdate || ""}
+                  onChange={(e) => setSelectedProjectUpdate(e.target.value)}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a project
+                  </option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.firstName} {project.lastName}
+                    </option>
+                  ))}
+                </select>
+                <form className="mt-6 space-y-4" onSubmit={handleUpdateproject}>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formUpdateData.firstName}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formUpdateData.lastName}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formUpdateData.email}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formUpdateData.password}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    required
+                  />
+                </div>
+                  <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <select
+                    name="role"
+                    value={formUpdateData.role}
+                    onChange={handleUpdateInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="ADMIN">Admin</option>
+                    
+                  </select>
+                </div>
+                <button
+                  onClick={handleUpdateproject}
+                  className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600"
+                >
+                  Update project
+                </button>
+              </form>
+              </div>
+            )}
+          </div>
+        )}
+
+          {selectedSection === "teams" && (
+            <div className="bg-white p-6 rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Team Statistics</h2>
+              <div className="flex flex-wrap gap-4 justify-start">
+          <button
+            type="button"
+            className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
+              selectedAction === "addTeam" && "ring ring-green-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("addTeam")}
+          >
+            Create Team
+          </button>
+        </div>
+
+
+          {/* Add Team Form */}
+          {selectedAction === "addTeam" && (
+            <form className="mt-6 space-y-4" onSubmit={handleAddTeam}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Team Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={teamData.name}
+                  onChange={handleTeamInputChange}
+                  className="block w-full px-4 py-2 border rounded"
+                  required
+                />
+              </div>
+      
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Team Description</label>
+                <textarea
+                  name="description"
+                  value={teamData.description}
+                  onChange={handleTeamInputChange}
+                  className="block w-full px-4 py-2 border rounded"
+                  rows="4"
+                  placeholder="Enter a brief description of the team"
+                />
+              </div>
+      
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Add Projects to Team</label>
+                <div className="relative">
+                  <button type="button"
+                    onClick={handleToggle}
+                    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {selectedMembers.length > 0
+                      ? `${selectedMembers.length} selected`
+                      : 'Select members'}
+                  </button>
+      
+                  {isOpen && (
+                    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                      <div className="max-h-60 overflow-y-auto">
+                        {projects.map((project) => (
+                          <labelf
+                            key={project.id}
+                            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                          >
+                            <input
+                              type="checkbox"
+                              value={project.id}
+                              checked={selectedMembers.includes(project.id)}
+                              onChange={() => handleSelection(project.id)}
+                              className="mr-2"
+                            />
+                            {project.firstName} {project.lastName}
+                          </labelf>
+                        ))}
+                      </div>
+                      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+                        <button
+                          onClick={() => setIsOpen(false)}
+                          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                        >
+                          Done
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+      
+              <button
+                type="submit"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Add Team
+              </button>
+            </form>
+          )}
+
+
+
+
+          </div>
+        )}
+      </main>
     </div>
   );
 };
