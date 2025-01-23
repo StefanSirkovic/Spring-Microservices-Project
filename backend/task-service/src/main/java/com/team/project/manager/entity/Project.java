@@ -6,23 +6,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Date;
 
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name="_team")
-public class Team {
+@Table(name="_project")
+public class Project {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
+
     private String name;
     private String description;
+    private Date startDate;
+    private Date endDate;
 
-    @OneToMany(mappedBy="team", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Project> projects;
+    @ManyToOne
+    @JoinColumn(name="team_id", nullable = false)
+    private Team team;
 
 }
