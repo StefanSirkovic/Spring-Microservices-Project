@@ -72,6 +72,11 @@ const ManagerDashboard = () => {
   
       if (response.ok) {
         toast.success("Project successfully added!");
+
+        fetch("http://localhost:8082/projects")
+            .then((res) => res.json())
+            .then((data) => setProjects(data))
+            .catch((err) => console.error("Error fetching teams:", err));
   
         setFormData({
           name: "",
@@ -102,8 +107,15 @@ const ManagerDashboard = () => {
         .then((data) => setTeams(data))
         .catch((err) => console.error("Error fetching teams:", err));
           }, []);
+
+        useEffect(() => {
+          fetch("http://localhost:8082/projects")
+            .then((res) => res.json())
+            .then((data) => setProjects(data))
+            .catch((err) => console.error("Error fetching teams:", err));
+              }, []);
   
-  const handleDeleteproject = async () => {
+  const handleDeleteProject = async () => {
     if (!selectedProject) {
       toast.error("Please select a project to delete.");
       return;
@@ -112,9 +124,9 @@ const ManagerDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this project?")) {
       return;
     }
-
+    
     try {
-      const response = await fetch(`http://localhost:8080/auth/delete/${selectedProject}`, {
+      const response = await fetch(`http://localhost:8082/projects/delete/${selectedProject}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -122,14 +134,11 @@ const ManagerDashboard = () => {
       });
 
       if (response.ok) {
-        toast.success("project successfully deleted!");
-        fetch("http://localhost:8080/admin/dashboard", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-          .then((res) => res.json())
-          .then((data) => setProjects(data.projects || []))
-          .catch((err) => console.error("Error fetching projects:", err));
+        toast.success("Project successfully deleted!");
+        fetch("http://localhost:8082/projects")
+            .then((res) => res.json())
+            .then((data) => setProjects(data))
+            .catch((err) => console.error("Error fetching teams:", err));
         setSelectedProject(null);
       } else {
         const errorText = await response.text();
@@ -269,7 +278,7 @@ const handleAddTeam = (e) => {
 
   
         
-          const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -487,21 +496,22 @@ const handleAddTeam = (e) => {
               <div className="mt-6">
                 <h3 className="text-lg font-bold">Select Project to Delete</h3>
                 <select
-                  value={selectedProject || ""}
-                  onChange={(e) => setSelectedProject(e.target.value)}
-                  className="block w-full px-4 py-2 border rounded mt-2"
-                >
-                  <option value="" disabled>
-                    Select a project
+                value={selectedProject || ""}
+                onChange={(e) => setSelectedProject(Number(e.target.value))} // Pretvara u broj
+                className="block w-full px-4 py-2 border rounded mt-2"
+              >
+                <option value="" disabled>
+                  Select a project
+                </option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
                   </option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.firstName} {project.lastName}
-                    </option>
-                  ))}
-                </select>
+                ))}
+              </select>
+
                 <button
-                  onClick={handleDeleteproject}
+                  onClick={handleDeleteProject}
                   className="bg-red-500 text-white px-4 py-2 mt-4 rounded hover:bg-red-600"
                 >
                   Delete Project
