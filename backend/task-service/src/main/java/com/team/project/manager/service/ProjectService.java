@@ -7,6 +7,8 @@ import com.team.project.manager.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ProjectService {
@@ -23,5 +25,19 @@ public class ProjectService {
         project = projectRepository.save(project);
 
         return project;
+    }
+
+    public List<Project> getProjects() {
+        return projectRepository.findAll();
+    }
+
+    public String deleteProject(Integer id) {
+        Project project = projectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Project not found"));
+
+        projectRepository.delete(project);
+
+        return "Project deleted";
+
     }
 }
