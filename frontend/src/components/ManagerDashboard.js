@@ -8,8 +8,8 @@ const ManagerDashboard = () => {
   const [selectedSection, setSelectedSection] = useState("projects");
   const [selectedAction, setSelectedAction] = useState(null);
   const [formData, setFormData] = useState({
-    projectName: "",
-    projectDescription: "",
+    name: "",
+    description: "",
     startDate: "",
     endDate: "",
     team: "",
@@ -47,43 +47,41 @@ const ManagerDashboard = () => {
     setFormUpdateData({ ...formUpdateData, [name]: value });
   };
 
-  const handleRegister = async (e) => {
+  const handleCreate = async (e) => {
     e.preventDefault();
-    if (!formData.projectName || !formData.projectDescription || !formData.startDate || !formData.endDate || !formData.team) {
+    if (!formData.name || !formData.description || !formData.startDate || !formData.endDate || !formData.team) {
       toast.error("All fields are required.");
       return;
     }
+    const requestData = {
+      ...formData,
+      team: {
+        id: selectedTeam,
+      },
+    };
   
     try {
-      const response = await fetch("http://localhost:8080/projects/create", {
+      const response = await fetch("http://localhost:8082/projects/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       });
   
       if (response.ok) {
         toast.success("Project successfully added!");
   
-        
-        fetch("http://localhost:8080/admin/dashboard", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-          .then((res) => res.json())
-          .then((data) => setProjects(data.projects || []))
-          .catch((err) => console.error("Error fetching projects:", err));
-  
         setFormData({
-          projectName: "",
-          projectDescription: "",
+          name: "",
+          description: "",
           startDate: "",
           endDate: "",
           team: "",
         });
-  
+        
+        setSelectedTeam("");
         setSelectedAction(null);
       } else {
         const errorText = await response.text();
@@ -94,6 +92,16 @@ const ManagerDashboard = () => {
       console.error("Error creating project:", error);
     }
   };
+
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
+  
+    useEffect(() => {
+      fetch("http://localhost:8082/teams")
+        .then((res) => res.json())
+        .then((data) => setTeams(data))
+        .catch((err) => console.error("Error fetching teams:", err));
+          }, []);
   
   const handleDeleteproject = async () => {
     if (!selectedProject) {
@@ -385,15 +393,15 @@ const handleAddTeam = (e) => {
 
             {/* Add New Project Form */}
             {selectedAction === "addProject" && (
-              <form className="mt-6 space-y-4" onSubmit={handleRegister}>
+              <form className="mt-6 space-y-4" onSubmit={handleCreate}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Project Name
                   </label>
                   <input
                     type="text"
-                    name="projectName"
-                    value={formData.projectName}
+                    name="name"
+                    value={formData.name}
                     onChange={handleInputChange}
                     className="block w-full px-4 py-2 border rounded"
                     required
@@ -404,8 +412,8 @@ const handleAddTeam = (e) => {
                     Project Description
                   </label>
                   <textarea
-                    name="projectDescription"
-                    value={formData.projectDescription}
+                    name="description"
+                    value={formData.description}
                     onChange={handleInputChange}
                     className="block w-full px-4 py-2 border rounded"
                     rows="4"
@@ -443,17 +451,26 @@ const handleAddTeam = (e) => {
                     Team
                   </label>
                   <select
-                    name="team"
-                    value={formData.team}
-                    onChange={handleInputChange}
-                    className="block w-full px-4 py-2 border rounded"
-                  >
-                    <option value="">Select Team</option>
-                    {/* Ovo su primeri timova; zameni ih stvarnim timovima iz baze */}
-                    <option value="Team A">Team A</option>
-                    <option value="Team B">Team B</option>
-                    <option value="Team C">Team C</option>
-                  </select>
+                  value={selectedTeam || ""}
+                  onChange={(e) => {
+                    const teamId = e.target.value;
+                    setSelectedTeam(teamId);
+                    setFormData((prevFormData) => ({
+                      ...prevFormData,
+                      team: teamId,
+                    }));
+                  }}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a team
+                  </option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id}>
+                      {team.name}
+                    </option>
+                  ))}
+                </select>
                 </div>
                 <button
                   type="submit"
