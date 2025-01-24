@@ -8,6 +8,8 @@ import com.team.project.manager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -27,5 +29,18 @@ public class TaskService {
         task.setTeam(team);
 
         return taskRepository.save(task);
+    }
+
+    public List<Task> getTasks() {
+        return taskRepository.findAll();
+    }
+
+    public String removeTask(Integer taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        taskRepository.delete(task);
+
+        return "Task deleted";
     }
 }

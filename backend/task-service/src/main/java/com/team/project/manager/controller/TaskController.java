@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/tasks")
@@ -18,5 +20,15 @@ public class TaskController {
     @PostMapping("/create/{id}")
     public ResponseEntity<Task> create(@PathVariable("id") Integer projectId, @RequestBody Task task) {
         return ResponseEntity.ok(taskService.createTask(projectId,task));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Task>> getAll() {
+        return ResponseEntity.ok(taskService.getTasks());
+    }
+
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<String> remove(@PathVariable("id") Integer taskId){
+        return ResponseEntity.ok(taskService.removeTask(taskId));
     }
 }
