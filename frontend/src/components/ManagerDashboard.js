@@ -110,40 +110,41 @@ const ManagerDashboard = () => {
             .catch((err) => console.error("Error fetching teams:", err));
               }, []);
   
-  const handleDeleteProject = async () => {
-    if (!selectedProject) {
-      toast.error("Please select a project to delete.");
-      return;
-    }
+      const handleDeleteProject = async () => {
+        if (!selectedProject) {
+          toast.error("Please select a project to delete.");
+          return;
+        }
 
-    if (!window.confirm("Are you sure you want to delete this project?")) {
-      return;
-    }
-    
-    try {
-      const response = await fetch(`http://localhost:8082/projects/delete/${selectedProject}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+        if (!window.confirm("Are you sure you want to delete this project?")) {
+          return;
+        }
+        
+        try {
+          const response = await fetch(`http://localhost:8082/projects/delete/${selectedProject}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
 
-      if (response.ok) {
-        toast.success("Project successfully deleted!");
-        fetch("http://localhost:8082/projects")
-            .then((res) => res.json())
-            .then((data) => setProjects(data))
-            .catch((err) => console.error("Error fetching teams:", err));
-        setSelectedProject(null);
-      } else {
-        const errorText = await response.text();
-        toast.error(errorText || "Deletion failed.");
-      }
-    } catch (error) {
-      toast.error("Error deleting project. Please try again.");
-      console.error("Error deleting project:", error);
-    }
-  };
+          if (response.ok) {
+            toast.success("Project successfully deleted!");
+            fetch("http://localhost:8082/projects")
+                .then((res) => res.json())
+                .then((data) => setProjects(data))
+                .catch((err) => console.error("Error fetching teams:", err));
+            fetchTasks();
+            setSelectedProject(null);
+          } else {
+            const errorText = await response.text();
+            toast.error(errorText || "Deletion failed.");
+          }
+        } catch (error) {
+          toast.error("Error deleting project. Please try again.");
+          console.error("Error deleting project:", error);
+        }
+      };
 
   
 
@@ -250,8 +251,6 @@ const handleAddTeam = (e) => {
       comments: [],
     };
     
-    console.log(requestData);
-    console.log(selectedProjectTask);
   
     try {
       const response = await fetch(`http://localhost:8082/tasks/create/${selectedProjectTask}`, {
@@ -273,7 +272,7 @@ const handleAddTeam = (e) => {
           priority: "",
           assignedMember: "",
         });
-  
+        fetchTasks();
         setSelectedUsers([]);
         setSelectedProjectTask(null);
         setSelectedAction(null);
@@ -287,10 +286,6 @@ const handleAddTeam = (e) => {
     }
   };
   
-
-
-  
-
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [users, setUsers] = useState([]);
@@ -325,10 +320,70 @@ const handleAddTeam = (e) => {
     }
   };
 
+
+
+  const [tasks, setTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch("http://localhost:8082/tasks", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Failed to fetch tasks.");
+      }
+    } catch (error) {
+      toast.error("Error fetching tasks. Please try again.");
+      console.error("Error fetching tasks:", error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+  
+
+  const handleDeleteTask = async () => {
+    if (!selectedTask) {
+      toast.error("Please select a task to remove.");
+      return;
+    }
+    if (!window.confirm("Are you sure you want to delete this task?")) {
+      return;
+    }
+  
+    try {
+      const response = await fetch(`http://localhost:8082/tasks/remove/${selectedTask}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (response.ok) {
+        toast.success("Task successfully removed!");
+        fetchTasks();
+        setSelectedTask(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Failed to remove task.");
+      }
+    } catch (error) {
+      toast.error("Error removing task. Please try again.");
+      console.error("Error removing task:", error);
+    }
+  };
   
 
   
-      
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ToastContainer for alerts */}
@@ -449,7 +504,15 @@ const handleAddTeam = (e) => {
           </button>
           <button
             className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
-              selectedAction === "monitorProgress" && "ring ring-yellow-300"
+              selectedAction === "removeTask" && "ring ring-yellow-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("removeTask")}
+          >
+            Remove Task
+          </button>
+          <button
+            className={`px-4 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 ${
+              selectedAction === "monitorProgress" && "ring ring-sky-300"
             } w-full sm:w-auto`}
             onClick={() => handleAction("monitorProgress")}
           >
@@ -659,53 +722,51 @@ const handleAddTeam = (e) => {
                 </div>
 
                 <div className="mt-5 mb-5">
-          <label className="block mt-5 text-sm font-medium text-gray-700">
-            Select a Member from the project team to assign the task to
-          </label>
-          <div className="relative">
-  <button
-    type="button"
-    onClick={() => setIsMembersOpen(!isMembersOpen)}
-    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-  >
-    {selectedUsers.length > 0
-      ? `${selectedUsers.length} selected`
-      : "Select members"}
-  </button>
-
-  {isMembersOpen && (
-    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-      <div className="max-h-60 overflow-y-auto">
-        {users.map((user) => (
-          <label
-            key={user.id}
-            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                  <label className="block mt-5 mb-2 text-sm font-medium text-gray-700">
+                    Select a Member from the project team to assign the task to
+                  </label>
+                  <div className="relative">
+                <button
+            type="button"
+            onClick={() => setIsMembersOpen(!isMembersOpen)}
+            className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <input
-              type="radio"
-              name="teamMember"
-              value={user.id}
-              checked={selectedUsers[0] === user.id} 
-              onChange={() => handleSelectionTeamMember(user.id)}
-              className="mr-2"
-            />
-            {user.firstName} {user.lastName}
-          </label>
-        ))}
-      </div>
-      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
-        <button
-          onClick={() => setIsMembersOpen(false)}
-          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-        >
-          Done
-        </button>
-      </div>
-    </div>
-  )}
-</div>
+            {selectedUsers.length > 0
+              ? `${selectedUsers.length} selected`
+              : "Select member"}
+          </button>
 
-
+          {isMembersOpen && (
+            <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+              <div className="max-h-60 overflow-y-auto">
+                {users.map((user) => (
+                  <label
+                    key={user.id}
+                    className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                  >
+                    <input
+                      type="radio"
+                      name="teamMember"
+                      value={user.id}
+                      checked={selectedUsers[0] === user.id} 
+                      onChange={() => handleSelectionTeamMember(user.id)}
+                      className="mr-2"
+                    />
+                    {user.firstName} {user.lastName}
+                  </label>
+                ))}
+              </div>
+              <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+                <button
+                  onClick={() => setIsMembersOpen(false)}
+                  className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         </div>
                 <button
                   type="submit"
@@ -715,6 +776,38 @@ const handleAddTeam = (e) => {
                 </button>
               </form>
             )}
+
+
+            {/* Remove Task Section */}
+            {selectedAction === "removeTask" && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold">Select Task to Remove</h3>
+                <select
+                  value={selectedTask || ""}
+                  onChange={async (e) => {
+                    setSelectedTask(Number(e.target.value));
+                  }}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a task
+                  </option>
+                  {tasks.map((task) => (
+                    <option key={task.id} value={task.id}>
+                      {task.name}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={handleDeleteTask}
+                  className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600"
+                >
+                  Remove Task
+                </button>
+              </div>
+            )}
+
 
 
 
