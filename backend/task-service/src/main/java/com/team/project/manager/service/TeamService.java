@@ -2,7 +2,9 @@ package com.team.project.manager.service;
 
 import com.team.project.manager.dto.TeamDto;
 import com.team.project.manager.dto.UserDto;
+import com.team.project.manager.entity.Project;
 import com.team.project.manager.entity.Team;
+import com.team.project.manager.repository.ProjectRepository;
 import com.team.project.manager.repository.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -18,6 +20,8 @@ public class TeamService {
 
     private final TeamRepository teamRepository;
     private final RestTemplate restTemplate;
+    private final ProjectService projectService;
+    private final ProjectRepository projectRepository;
 
     public Team createTeam(TeamDto teamDto) {
 
@@ -57,7 +61,12 @@ public class TeamService {
                 throw new IllegalArgumentException("Error while deleting team");
             }
 
+            Project project = projectRepository.findByTeam(team);
+            if(project!=null)
+                projectService.deleteProject(project.getId());
+
             this.teamRepository.delete(team);
+
             return ResponseEntity.ok("Team deleted successfully");
         }
         return ResponseEntity.notFound().build();

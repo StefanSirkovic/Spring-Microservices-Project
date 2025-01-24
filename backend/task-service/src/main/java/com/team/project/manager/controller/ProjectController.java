@@ -1,5 +1,6 @@
 package com.team.project.manager.controller;
 
+import com.team.project.manager.dto.UserDto;
 import com.team.project.manager.entity.Project;
 import com.team.project.manager.repository.ProjectRepository;
 import com.team.project.manager.service.ProjectService;
@@ -32,6 +33,12 @@ public class ProjectController {
     public ResponseEntity<String> delete(@PathVariable("id") Integer id) {
         return ResponseEntity.ok(projectService.deleteProject(id));
     }
+
+    @GetMapping("/get-members/{id}")
+    public ResponseEntity<List<UserDto>> getMembers(@PathVariable("id") Integer projectId) {
+        return ResponseEntity.ok(projectService.getTeamMembers(projectId));
+    }
+
 
 
 }
