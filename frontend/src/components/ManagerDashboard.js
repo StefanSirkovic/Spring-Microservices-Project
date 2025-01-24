@@ -15,18 +15,16 @@ const ManagerDashboard = () => {
     team: "",
   });
   
-  const [formUpdateData, setFormUpdateData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    role: "MEMBER",
-  });
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedProjectUpdate, setSelectedProjectUpdate] = useState(null);
 
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const handleToggle = (e) => {
+    e.stopPropagation();
+    setIsOpen(!isOpen);
+    };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -42,10 +40,7 @@ const ManagerDashboard = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  const handleUpdateInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormUpdateData({ ...formUpdateData, [name]: value });
-  };
+  
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -150,65 +145,7 @@ const ManagerDashboard = () => {
     }
   };
 
-  const handleUpdateproject = async (e) => {
-    e.preventDefault();
-    if (!formUpdateData.firstName || !formUpdateData.lastName || !formUpdateData.email || !formUpdateData.password) {
-      toast.error("All fields are required.");
-      return;
-    }
-    try {
-      const response = await fetch(`http://localhost:8080/auth/update/${selectedProjectUpdate}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(formUpdateData),
-      });
   
-      if (response.ok) {
-        toast.success("project successfully updated!", {
-          duration: 5000,
-        });
-  
-        fetch("http://localhost:8080/admin/dashboard", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-          .then((res) => res.json())
-          .then((data) => setProjects(data.projects || []))
-          .catch((err) => console.error("Error fetching projects:", err));
-  
-  
-        setSelectedProjectUpdate(null);
-        setFormUpdateData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          password: "",
-          role: "MEMBER",
-        });
-        setSelectedAction(null);
-      } else {
-        const errorText = await response.text();
-        toast.error(errorText || "Update failed.");
-      }
-    } catch (error) {
-      toast.error("Error updating project. Please try again.");
-      console.error("Error updating project:", error);
-    }
-  };
-  
-  useEffect(() => {
-    fetch("http://localhost:8080/admin/dashboard", {
-      method: "GET",
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setProjects(data.projects || []))
-      .catch((err) => console.error("Error fetching Admin Dashboard:", err));
-  }, []);
-
 
   const [teamData, setTeamData] = useState({ name: '', description: '', members: [] });
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -268,18 +205,130 @@ const handleAddTeam = (e) => {
     
   };
 
-    const handleToggle = (e) => {
-    e.stopPropagation();
-    setIsOpen(!isOpen);
+
+  const [taskFormData, setTaskFormData] = useState({
+    name: "",
+    description: "",
+    deadline: "",
+    priority: "",
+    assignedMember: "",
+  });
+
+  const [selectedProjectTask, setSelectedProjectTask] = useState(null);
+  
+
+  const handleTaskInputChange = (e) => {
+    const { name, value } = e.target;
+    setTaskFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+  
+    if (
+      !taskFormData.name ||
+      !taskFormData.description ||
+      !taskFormData.deadline ||
+      !taskFormData.priority ||
+      selectedUsers.length === 0 ||
+      !selectedProjectTask
+    ) {
+      toast.error("All fields are required.");
+      return;
+    }
+  
+    const requestData = {
+      name: taskFormData.name,
+      description: taskFormData.description,
+      priority: taskFormData.priority,
+      deadline: taskFormData.deadline,
+      userId: selectedUsers[0],
+      status: "Pending",
+      comments: [],
     };
-
+    
+    console.log(requestData);
+    console.log(selectedProjectTask);
+  
+    try {
+      const response = await fetch(`http://localhost:8082/tasks/create/${selectedProjectTask}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      if (response.ok) {
+        toast.success("Task successfully added!");
+  
+        setTaskFormData({
+          name: "",
+          description: "",
+          deadline: "",
+          priority: "",
+          assignedMember: "",
+        });
+  
+        setSelectedUsers([]);
+        setSelectedProjectTask(null);
+        setSelectedAction(null);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Task creation failed.");
+      }
+    } catch (error) {
+      toast.error("Error creating task. Please try again.");
+      console.error("Error creating task:", error);
+    }
+  };
   
 
 
   
-        
-  const [menuOpen, setMenuOpen] = useState(false);
 
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [users, setUsers] = useState([]);
+  
+  const handleSelectionTeamMember = (userId) => {
+    setSelectedUsers([userId]);
+  };
+  
+
+  const handleProjectChange = async (e) => {
+    const projectId = Number(e.target.value);
+    setSelectedProjectTask(projectId);
+  
+    try {
+      const response = await fetch(`http://localhost:8082/projects/get-members/${projectId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (response.ok) {
+        const users = await response.json();
+        setUsers(users);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Failed to load users for the selected project.");
+      }
+    } catch (error) {
+      toast.error("Error fetching users. Please try again.");
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  
+
+  
+      
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ToastContainer for alerts */}
@@ -391,6 +440,14 @@ const handleAddTeam = (e) => {
             Delete Project
           </button>
           <button
+            className={`px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600 ${
+              selectedAction === "createTask" && "ring ring-indigo-300"
+            } w-full sm:w-auto`}
+            onClick={() => handleAction("createTask")}
+          >
+            Create Task
+          </button>
+          <button
             className={`px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 ${
               selectedAction === "monitorProgress" && "ring ring-yellow-300"
             } w-full sm:w-auto`}
@@ -497,7 +554,7 @@ const handleAddTeam = (e) => {
                 <h3 className="text-lg font-bold">Select Project to Delete</h3>
                 <select
                 value={selectedProject || ""}
-                onChange={(e) => setSelectedProject(Number(e.target.value))} // Pretvara u broj
+                onChange={(e) => setSelectedProject(Number(e.target.value))}
                 className="block w-full px-4 py-2 border rounded mt-2"
               >
                 <option value="" disabled>
@@ -519,102 +576,156 @@ const handleAddTeam = (e) => {
               </div>
             )}
 
-            {/* Monitor Progress Section */}
-            {selectedAction === "monitorProgress" && (
-              <div className="mt-6">
-                <h3 className="text-lg font-bold">Select project to Update</h3>
-                <select
-                  value={selectedProjectUpdate || ""}
-                  onChange={(e) => setSelectedProjectUpdate(e.target.value)}
-                  className="block w-full px-4 py-2 border rounded mt-2"
-                >
-                  <option value="" disabled>
-                    Select a project
-                  </option>
-                  {projects.map((project) => (
-                    <option key={project.id} value={project.id}>
-                      {project.firstName} {project.lastName}
-                    </option>
-                  ))}
-                </select>
-                <form className="mt-6 space-y-4" onSubmit={handleUpdateproject}>
+            {/* Create Task Section */}
+            {selectedAction === "createTask" && (
+              <form className="mt-6 space-y-4" onSubmit={handleAddTask}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    First Name
+                    Task Name
                   </label>
                   <input
                     type="text"
-                    name="firstName"
-                    value={formUpdateData.firstName}
-                    onChange={handleUpdateInputChange}
+                    name="name"
+                    value={taskFormData.name}
+                    onChange={handleTaskInputChange}
                     className="block w-full px-4 py-2 border rounded"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Last Name
+                    Task Description
+                  </label>
+                  <textarea
+                    name="description"
+                    value={taskFormData.description}
+                    onChange={handleTaskInputChange}
+                    className="block w-full px-4 py-2 border rounded"
+                    rows="4"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Deadline
                   </label>
                   <input
-                    type="text"
-                    name="lastName"
-                    value={formUpdateData.lastName}
-                    onChange={handleUpdateInputChange}
+                    type="date"
+                    name="deadline"
+                    value={taskFormData.deadline}
+                    onChange={handleTaskInputChange}
                     className="block w-full px-4 py-2 border rounded"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formUpdateData.email}
-                    onChange={handleUpdateInputChange}
-                    className="block w-full px-4 py-2 border rounded"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formUpdateData.password}
-                    onChange={handleUpdateInputChange}
-                    className="block w-full px-4 py-2 border rounded"
-                    required
-                  />
-                </div>
-                  <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Role
+                    Priority
                   </label>
                   <select
-                    name="role"
-                    value={formUpdateData.role}
-                    onChange={handleUpdateInputChange}
-                    className="block w-full px-4 py-2 border rounded"
+                    name="priority"
+                    value={taskFormData.priority || ""}
+                    onChange={handleTaskInputChange}
+                    className="block w-full px-4 py-2 border rounded mt-2"
+                    required
                   >
-                    <option value="MEMBER">Member</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="ADMIN">Admin</option>
-                    
+                    <option value="" disabled>
+                      Select priority
+                    </option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Select a project for the task
+                  </label>
+                <select
+                value={selectedProjectTask || ""}
+                onChange={handleProjectChange}
+                className="block w-full px-4 py-2 border rounded mt-2"
+              >
+                <option value="" disabled>
+                  Select a project
+                </option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+
+                </div>
+
+                <div className="mt-5 mb-5">
+          <label className="block mt-5 text-sm font-medium text-gray-700">
+            Select a Member from the project team to assign the task to
+          </label>
+          <div className="relative">
+  <button
+    type="button"
+    onClick={() => setIsMembersOpen(!isMembersOpen)}
+    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  >
+    {selectedUsers.length > 0
+      ? `${selectedUsers.length} selected`
+      : "Select members"}
+  </button>
+
+  {isMembersOpen && (
+    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+      <div className="max-h-60 overflow-y-auto">
+        {users.map((user) => (
+          <label
+            key={user.id}
+            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+          >
+            <input
+              type="radio"
+              name="teamMember"
+              value={user.id}
+              checked={selectedUsers[0] === user.id} 
+              onChange={() => handleSelectionTeamMember(user.id)}
+              className="mr-2"
+            />
+            {user.firstName} {user.lastName}
+          </label>
+        ))}
+      </div>
+      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
+        <button
+          onClick={() => setIsMembersOpen(false)}
+          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+        >
+          Done
+        </button>
+      </div>
+    </div>
+  )}
+</div>
+
+
+        </div>
                 <button
-                  onClick={handleUpdateproject}
-                  className="bg-yellow-500 text-white px-4 py-2 mt-4 rounded hover:bg-yellow-600"
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
                 >
-                  Update project
+                  Create Task
                 </button>
               </form>
-              </div>
             )}
+
+
+
+
+            {/* Monitor Progress Section */}
+            {selectedAction === "monitorProgress" && (
+              <div></div>
+            )}
+
+
+
           </div>
         )}
 
