@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import '../App.css';
+import { Pie } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
 const ManagerDashboard = () => {
   const [selectedSection, setSelectedSection] = useState("projects");
@@ -212,7 +214,7 @@ const handleAddTeam = (e) => {
     description: "",
     deadline: "",
     priority: "",
-    assignedMember: "",
+    userId: "",
   });
 
   const [selectedProjectTask, setSelectedProjectTask] = useState(null);
@@ -247,7 +249,7 @@ const handleAddTeam = (e) => {
       priority: taskFormData.priority,
       deadline: taskFormData.deadline,
       userId: selectedUsers[0],
-      status: "Pending",
+      status: "not-started",
       comments: [],
     };
     
@@ -270,7 +272,7 @@ const handleAddTeam = (e) => {
           description: "",
           deadline: "",
           priority: "",
-          assignedMember: "",
+          userId: "",
         });
         fetchTasks();
         setSelectedUsers([]);
@@ -381,8 +383,127 @@ const handleAddTeam = (e) => {
       console.error("Error removing task:", error);
     }
   };
-  
 
+  const [selectedProjectProgress, setSelectedProjectProgress] = useState(null);
+  const [usersProgress, setUsersProgress] = useState([]);
+
+  const handleProjectChangeProgress = async (e) => {
+    const projectId = Number(e.target.value);
+    setSelectedProjectProgress(projectId);
+  
+    try {
+      const response = await fetch(`http://localhost:8082/projects/get-members/${projectId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (response.ok) {
+        fetchTasks();
+        const usersProgress = await response.json();
+        setUsersProgress(usersProgress);
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Failed to load users for the selected project.");
+      }
+    } catch (error) {
+      toast.error("Error fetching users. Please try again.");
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  ChartJS.register(ArcElement, Tooltip, Legend);
+
+const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
+  const data = {
+    labels: ["Completed", "In Progress", "Not Started"],
+    datasets: [
+      {
+        label: "Task Status",
+        data: [completed, inProgress, notStarted],
+        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+        borderColor: ["#388E3C", "#FFA000", "#D32F2F"],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}`,
+        },
+      },
+    },
+  };
+
+  return (
+    <div style={{ width: `${size}px`, height: `${size}px` }}>
+      <Pie data={data} options={options} />
+    </div>
+  );
+};
+
+
+  const [tasksProgress, setTasksProgress] = useState([]);
+  const [selectedTaskDetails, setSelectedTaskDetails] = useState(null);
+  const [progressData, setProgressData] = useState({
+  progressPercentage: 0,
+  completedTasks: [],
+  inProgressTasks: [],
+  notStartedTasks: [],
+  delayedTasks: [],
+  });
+
+  const handleMonitorProgress = async (e) => {
+    e.preventDefault();
+
+    try {
+      
+      const response = await fetch(`http://localhost:8082/tasks/${selectedProjectProgress}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      if (response.ok) {
+        fetchTasks();
+        const data = await response.json();
+        
+        const completedTasks = data.filter((task) => task.status === "completed");
+        const inProgressTasks = data.filter((task) => task.status === "in-progress");
+        const notStartedTasks = data.filter((task) => task.status === "not-started");
+        const delayedTasks = data.filter(
+          (task) =>
+            task.status !== "completed" && new Date(task.deadline) < new Date()
+        );
+  
+        const progressPercentage = Math.round((completedTasks.length / tasks.length) * 100);
+  
+        setTasksProgress(data);
+        setProgressData({
+          progressPercentage,
+          completedTasks,
+          inProgressTasks,
+          notStartedTasks,
+          delayedTasks,
+        });
+      } else {
+        const errorText = await response.text();
+        toast.error(errorText || "Failed to fetch project details.");
+      }
+    } catch (error) {
+      toast.error("Error monitoring progress. Please try again.");
+      console.error("Error monitoring progress:", error);
+    }
+  };
+  
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -810,11 +931,110 @@ const handleAddTeam = (e) => {
 
 
 
-
-
             {/* Monitor Progress Section */}
             {selectedAction === "monitorProgress" && (
-              <div></div>
+              <form className="mt-6 space-y-4" onSubmit={handleMonitorProgress}>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Select a project for the progress monitoring
+                </label>
+              <select
+              value={selectedProjectProgress || ""}
+              onChange={handleProjectChangeProgress}
+              className="block w-full px-4 py-2 border rounded mt-2"
+            >
+              <option value="" disabled>
+                Select a project
+              </option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+              </div>
+
+              
+              {progressData && (
+              <div className="mt-6">
+              <h3 className="text-lg font-bold mb-4">Project Progress</h3>
+    
+              
+              <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
+                <div
+                  className="bg-sky-600 h-4 rounded-full"
+                  style={{ width: `${progressData.progressPercentage}%` }}
+                ></div>
+              </div>
+              <p className="text-sm mb-4">
+                Progress: {progressData.progressPercentage}% completed
+              </p>
+
+              
+              {progressData.delayedTasks.length > 0 ? (
+                <div className="text-red-600 font-bold">
+                  {progressData.delayedTasks.length} tasks are delayed!
+                </div>
+              ) : (
+                <div className="text-green-600 font-bold">No delays detected.</div>
+              )}
+
+              
+              <div className="mt-6">
+                <h4 className="text-lg font-bold">Task Status Overview</h4>
+                <div className="flex justify-center mt-4">
+                  <TaskStatusChart
+                    completed={progressData.completedTasks.length}
+                    inProgress={progressData.inProgressTasks.length}
+                    notStarted={progressData.notStartedTasks.length}
+                  />
+                </div>
+              </div>
+
+              
+              <div className="mt-6">
+                <h4 className="text-lg font-bold">Task Details</h4>
+                <ul>
+                  {tasksProgress.map((task) => (
+                    <li key={task.id} className="border-b py-2">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h5 className="font-bold">{task.name}</h5>
+                          <p>Status: {task.status}</p>
+                        </div>
+                        <button
+                          onClick={() => setSelectedTaskDetails(task)}
+                          className="text-blue-500 hover:underline"
+                        >
+                          More Details
+                        </button>
+                      </div>
+                      
+                      {selectedTaskDetails?.id === task.id && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          <p>Description: {task.description}</p>
+                          <p>Assigned Member: {usersProgress.map((user) => (
+                        <label key={user.id}>
+                        {user.firstName} {user.lastName} </label>                     
+                        ))}</p>                 
+                          <p>Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+              <button
+                type="submit"
+                className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700"
+              >
+                See progress
+              </button>
+            </form>
             )}
 
 
