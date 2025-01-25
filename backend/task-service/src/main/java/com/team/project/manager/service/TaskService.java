@@ -8,6 +8,7 @@ import com.team.project.manager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,5 +43,16 @@ public class TaskService {
         taskRepository.delete(task);
 
         return "Task deleted";
+    }
+
+    public List<Task> getTaskByProject(Integer projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found with ID: " + projectId));
+
+        List<Task> findTasks = taskRepository.findAllByProject(project);
+
+
+        return findTasks;
+
     }
 }
