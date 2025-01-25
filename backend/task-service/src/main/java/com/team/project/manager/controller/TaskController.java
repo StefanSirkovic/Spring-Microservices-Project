@@ -31,4 +31,10 @@ public class TaskController {
     public ResponseEntity<String> remove(@PathVariable("id") Integer taskId){
         return ResponseEntity.ok(taskService.removeTask(taskId));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<List<Task>> getByProject(@PathVariable("id") Integer projectId){
+        return ResponseEntity.ok(taskService.getTaskByProject(projectId));
+    }
+
 }
