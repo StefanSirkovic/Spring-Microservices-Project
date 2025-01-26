@@ -45,10 +45,11 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Project not found"));
 
-        Task task = taskRepository.findByProject(project);
-        if(task != null)
-            taskRepository.delete(task);
-
+        List<Task> tasks = taskRepository.findAllByProject(project);
+        for(Task task : tasks) {
+            if(task != null)
+                taskRepository.delete(task);
+        }
         projectRepository.delete(project);
 
 

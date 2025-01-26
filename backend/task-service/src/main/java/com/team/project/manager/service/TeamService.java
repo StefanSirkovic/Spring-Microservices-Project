@@ -61,9 +61,11 @@ public class TeamService {
                 throw new IllegalArgumentException("Error while deleting team");
             }
 
-            Project project = projectRepository.findByTeam(team);
-            if(project!=null)
-                projectService.deleteProject(project.getId());
+            List<Project> projects = projectRepository.findAllByTeam(team);
+            for(Project project: projects) {
+                if(project!=null)
+                    projectService.deleteProject(project.getId());
+            }
 
             this.teamRepository.delete(team);
 
