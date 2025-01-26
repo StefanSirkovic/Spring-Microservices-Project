@@ -1,5 +1,6 @@
 package com.team.project.manager.controller;
 
+import com.team.project.manager.dto.UserDto;
 import com.team.project.manager.entity.Task;
 import com.team.project.manager.repository.TaskRepository;
 import com.team.project.manager.service.TaskService;
@@ -36,5 +37,6 @@ public class TaskController {
     public ResponseEntity<List<Task>> getByProject(@PathVariable("id") Integer projectId){
         return ResponseEntity.ok(taskService.getTaskByProject(projectId));
     }
+
 
 }
