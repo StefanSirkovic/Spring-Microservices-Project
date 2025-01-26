@@ -65,7 +65,7 @@ public class ProjectService {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String userServiceUrl = "http://localhost:8080/manager/" + teamId + "/get-member";
+        String userServiceUrl = "http://localhost:8080/auth/" + teamId + "/get-member";
         try {
             ResponseEntity<UserDto[]> response = restTemplate.exchange(
                     userServiceUrl,

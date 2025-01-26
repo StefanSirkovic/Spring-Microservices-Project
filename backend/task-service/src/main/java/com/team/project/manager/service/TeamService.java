@@ -36,7 +36,7 @@ public class TeamService {
             if (teamDto.getUserIds() == null || teamDto.getUserIds().isEmpty() || userId == null)
                 throw new IllegalArgumentException("User id is null");
 
-            String userServiceUrl = "http://localhost:8080/admin/" + userId + "/assign-team";
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/assign-team";
             try {
                 restTemplate.put(userServiceUrl, team.getId());
             } catch (Exception e) {
@@ -54,7 +54,7 @@ public class TeamService {
     public ResponseEntity<String> deleteTeamService(Team team) {
         if (teamRepository.findByName(team.getName()).isPresent()) {
             Integer teamId = team.getId();
-            String userServiceUrl = "http://localhost:8080/admin/" + teamId + "/delete-team";
+            String userServiceUrl = "http://localhost:8080/auth/" + teamId + "/delete-team";
             try {
                 restTemplate.delete(userServiceUrl);
             } catch (Exception e) {
@@ -83,7 +83,7 @@ public class TeamService {
             if (teamDto.getUserIds() == null || teamDto.getUserIds().isEmpty() || userId == null)
                 throw new IllegalArgumentException("User id is null");
 
-            String userServiceUrl = "http://localhost:8080/admin/" + userId + "/team-member";
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/team-member";
             try {
                 restTemplate.put(userServiceUrl, team.getId());
             } catch (Exception e) {
@@ -102,7 +102,7 @@ public class TeamService {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String userServiceUrl = "http://localhost:8080/admin/" + teamId + "/get-member";
+        String userServiceUrl = "http://localhost:8080/auth/" + teamId + "/get-member";
         try {
             ResponseEntity<UserDto[]> response = restTemplate.exchange(
                     userServiceUrl,
@@ -133,7 +133,7 @@ public class TeamService {
 
         List<UserDto> membersToRemove = new ArrayList<>();
         for (Integer userId : teamDto.getUserIds()) {
-            String userServiceUrl = "http://localhost:8080/admin/" + userId + "/remove-member";
+            String userServiceUrl = "http://localhost:8080/auth/" + userId + "/remove-member";
             try {
                 Map<String, Object> body = new HashMap<>();
                 body.put("teamId", null);
