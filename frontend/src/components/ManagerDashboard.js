@@ -468,71 +468,101 @@ const ManagerDashboard = () => {
         setStatistics(response);
       };
 
-        const fetchStatistics = async (teamId, startDate, endDate) => {
-          try {
-            const response = await fetch(`http://localhost:8082/tasks/get-tasks?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`, {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            });
-        
-        if (!response.ok) throw new Error("Failed to fetch statistics");
-        
-        const tasks = await response.json();
-        toast.success("Statistics loaded successfully!")
-        const totalTasks = tasks.length;
-        const completedTasks = tasks.filter((task) => task.status === "completed").length;
-        const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length;
-        const notStartedTasks = tasks.filter((task) => task.status === "not-started").length;
-        let delayedTasks = tasks.filter((task) => new Date(task.deadline) < new Date(task.completedAt)).length;
-        delayedTasks+=tasks.filter((task) => new Date (task.deadline) < new Date()).length;
-        const totalCompletionTime = tasks
-          .filter((task) => task.status === "completed")
-          .reduce((sum, task) => sum + (new Date(task.completedAt) - new Date(task.startDate)) / (1000 * 60 * 60 * 24), 0);
+      const fetchStatistics = async (teamId, startDate, endDate) => {
+        try {
+          const response = await fetch(`http://localhost:8082/tasks/get-tasks?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
       
-        const averageCompletionTime = (totalCompletionTime / completedTasks).toFixed(2);
-        
-        const performanceData = tasks.map((task) => ({
-          member: task.userId,
-          completedTasks: task.status === "completed" ? 1 : 0,
-          delayedTasks: ((new Date(task.deadline) < new Date(task.completedAt)) 
-          || new Date(task.deadline) < new Date()) ? 1 : 0,
-        }));
-        
-        return {
-          totalTasks,
-          completedTasks,
-          inProgressTasks,
-          notStartedTasks,
-          averageCompletionTime,
-          delayedTasks,
-          performanceData,
-        };
-          }catch (error) {
-            console.error("Error fetching statistics:", error);
-            toast.error("Failed to fetch team statistics. Please try again later.");
-          }
-        };
+          if (!response.ok) throw new Error("Failed to fetch statistics");
       
-        const PerformanceChart = ({ data }) => {
-          const chartData = {
-            labels: data.map((item) => item.member),
-            datasets: [
-              {
-                label: "Completed Tasks",
-                data: data.map((item) => item.completedTasks),
-                backgroundColor: "rgba(75, 192, 192, 0.6)",
-              },
-              {
-                label: "Delayed Tasks",
-                data: data.map((item) => item.delayedTasks),
-                backgroundColor: "rgba(255, 99, 132, 0.6)",
-              },
-            ],
+          const tasks = await response.json();
+          toast.success("Statistics loaded successfully!");
+      
+          const totalTasks = tasks.length;
+          const completedTasks = tasks.filter((task) => task.status === "completed").length;
+          const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length;
+          const notStartedTasks = tasks.filter((task) => task.status === "not-started").length;
+      
+          let delayedTasks = tasks.filter((task) => new Date(task.deadline) < new Date(task.completedAt)).length;
+          delayedTasks += tasks.filter((task) => new Date(task.deadline) < new Date()).length;
+      
+          const totalCompletionTime = tasks
+            .filter((task) => task.status === "completed")
+            .reduce((sum, task) => sum + (new Date(task.completedAt) - new Date(task.startDate)) / (1000 * 60 * 60 * 24), 0);
+      
+          const averageCompletionTime = (totalCompletionTime / completedTasks).toFixed(2);
+      
+          // Fetch member information for each task
+          const performanceData = await Promise.all(
+            tasks.map(async (task) => {
+              try {
+                const memberResponse = await fetch(`http://localhost:8082/tasks/get-member?id=${task.id}`, {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                });
+      
+                if (!memberResponse.ok) throw new Error("Failed to fetch member");
+      
+                const member = await memberResponse.json();
+                console.log(member);
+                return {
+                  member: `${member.firstName} ${member.lastName}`,
+                  completedTasks: task.status === "completed" ? 1 : 0,
+                  delayedTasks:
+                    (new Date(task.deadline) < new Date(task.completedAt) || new Date(task.deadline) < new Date()) ? 1 : 0,
+                };
+              } catch (error) {
+                console.error(`Error fetching member for task ${task.id}:`, error);
+                return {
+                  member: "Unknown",
+                  completedTasks: task.status === "completed" ? 1 : 0,
+                  delayedTasks:
+                    (new Date(task.deadline) < new Date(task.completedAt) || new Date(task.deadline) < new Date()) ? 1 : 0,
+                };
+              }
+            })
+          );
+          console.log(performanceData);
+      
+          return {
+            totalTasks,
+            completedTasks,
+            inProgressTasks,
+            notStartedTasks,
+            averageCompletionTime,
+            delayedTasks,
+            performanceData,
           };
-        
-          return <Bar data={chartData} />;
+        } catch (error) {
+          console.error("Error fetching statistics:", error);
+          toast.error("Failed to fetch team statistics. Please try again later.");
+        }
+      };
+      
+      const PerformanceChart = ({ data }) => {
+        const chartData = {
+          labels: data.map((item) => item.member),
+          datasets: [
+            {
+              label: "Completed Tasks",
+              data: data.map((item) => item.completedTasks),
+              backgroundColor: "rgba(75, 192, 192, 0.6)",
+            },
+            {
+              label: "Delayed Tasks",
+              data: data.map((item) => item.delayedTasks),
+              backgroundColor: "rgba(255, 99, 132, 0.6)",
+            },
+          ],
         };
+      
+        return <Bar data={chartData} />;
+      };
+      
 
         const exportToPDF = () => {
           const doc = new jsPDF();
