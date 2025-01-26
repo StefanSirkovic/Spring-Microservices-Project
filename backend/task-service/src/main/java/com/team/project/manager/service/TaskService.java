@@ -9,6 +9,7 @@ import com.team.project.manager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class TaskService {
         if (team == null) {
             throw new IllegalStateException("Project must have a team assigned.");
         }
+        task.setCreationDate(LocalDate.now());
         task.setProject(project);
         task.setTeam(team);
 
@@ -57,4 +59,7 @@ public class TaskService {
 
     }
 
+    public List<Task> getTasksByTeamAndDateRange(Long teamId, LocalDate startDate, LocalDate endDate) {
+        return taskRepository.findByTeamIdAndDateRange(teamId, startDate, endDate);
+    }
 }

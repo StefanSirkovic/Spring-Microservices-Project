@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,6 +40,9 @@ public class Task {
     @JoinColumn(name="team_id", nullable = false)
     private Team team;
 
+    private LocalDate creationDate;
+    private LocalDate completedAt;
+    private LocalDate startDate;
 
 
 }
