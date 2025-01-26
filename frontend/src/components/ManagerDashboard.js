@@ -23,10 +23,7 @@ const ManagerDashboard = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const handleToggle = (e) => {
-    e.stopPropagation();
-    setIsOpen(!isOpen);
-    };
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -149,66 +146,6 @@ const ManagerDashboard = () => {
       };
 
   
-
-  const [teamData, setTeamData] = useState({ name: '', description: '', members: [] });
-  const [selectedMembers, setSelectedMembers] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-
-  
-  const handleTeamInputChange = (e) => {
-    const { name, value } = e.target;
-    setTeamData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleSelection = (projectId) => {
-    setSelectedMembers((prevSelected) =>
-      prevSelected.includes(projectId)
-        ? prevSelected.filter((id) => id !== projectId)
-        : [...prevSelected, projectId]
-    );
-  };
-
-const handleAddTeam = (e) => {
-  e.preventDefault();
-
-  fetch("http://localhost:8082/teams/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify({
-      name: teamData.name,
-      description: teamData.description,
-      projectIds: selectedMembers,
-    }),
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error("Failed to add team");
-      }
-      return res.json();
-    })
-    .then(() => {
-      fetch("http://localhost:8082/teams")
-      .then((res) => res.json())
-      .then((data) => {
-      })
-      .catch((err) => console.error("Error fetching teams:", err));
-      setSelectedAction(null);
-      setTeamData({ name: '', description: '', members: [] });
-      setSelectedMembers([]);
-      setIsOpen(false);
-      toast.success("Team created successfully!");
-    })
-    .catch((err) => {
-      console.error("Error adding team:", err);
-      toast.error("Error adding team. Please try again.");
-    });
-    
-  };
-
-
   const [taskFormData, setTaskFormData] = useState({
     name: "",
     description: "",
@@ -392,26 +329,63 @@ const handleAddTeam = (e) => {
     setSelectedProjectProgress(projectId);
   
     try {
-      const response = await fetch(`http://localhost:8082/projects/get-members/${projectId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const membersResponse = await fetch(
+        `http://localhost:8082/projects/get-members/${projectId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
   
-      if (response.ok) {
-        fetchTasks();
-        const usersProgress = await response.json();
-        setUsersProgress(usersProgress);
+      if (membersResponse.ok) {
+        const users = await membersResponse.json();
+        setUsersProgress(users);
       } else {
-        const errorText = await response.text();
+        const errorText = await membersResponse.text();
         toast.error(errorText || "Failed to load users for the selected project.");
       }
+  
+      const tasksResponse = await fetch(
+        `http://localhost:8082/tasks/${projectId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+  
+      if (tasksResponse.ok) {
+        const tasks = await tasksResponse.json();
+        const completedTasks = tasks.filter((task) => task.status === "completed");
+        const inProgressTasks = tasks.filter((task) => task.status === "in-progress");
+        const notStartedTasks = tasks.filter((task) => task.status === "not-started");
+        const delayedTasks = tasks.filter(
+          (task) =>
+            task.status !== "completed" && new Date(task.deadline) < new Date()
+        );
+  
+        const progressPercentage = Math.round((completedTasks.length / tasks.length) * 100);
+  
+        setTasksProgress(tasks);
+        setProgressData({
+          progressPercentage,
+          completedTasks,
+          inProgressTasks,
+          notStartedTasks,
+          delayedTasks,
+        });
+      } else {
+        const errorText = await tasksResponse.text();
+        toast.error(errorText || "Failed to fetch project details.");
+      }
     } catch (error) {
-      toast.error("Error fetching users. Please try again.");
-      console.error("Error fetching users:", error);
+      toast.error("Error fetching project data. Please try again.");
+      console.error("Error fetching project data:", error);
     }
   };
+  
 
   ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -461,48 +435,7 @@ const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
   delayedTasks: [],
   });
 
-  const handleMonitorProgress = async (e) => {
-    e.preventDefault();
-
-    try {
-      
-      const response = await fetch(`http://localhost:8082/tasks/${selectedProjectProgress}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
   
-      if (response.ok) {
-        fetchTasks();
-        const data = await response.json();
-        
-        const completedTasks = data.filter((task) => task.status === "completed");
-        const inProgressTasks = data.filter((task) => task.status === "in-progress");
-        const notStartedTasks = data.filter((task) => task.status === "not-started");
-        const delayedTasks = data.filter(
-          (task) =>
-            task.status !== "completed" && new Date(task.deadline) < new Date()
-        );
-  
-        const progressPercentage = Math.round((completedTasks.length / tasks.length) * 100);
-  
-        setTasksProgress(data);
-        setProgressData({
-          progressPercentage,
-          completedTasks,
-          inProgressTasks,
-          notStartedTasks,
-          delayedTasks,
-        });
-      } else {
-        const errorText = await response.text();
-        toast.error(errorText || "Failed to fetch project details.");
-      }
-    } catch (error) {
-      toast.error("Error monitoring progress. Please try again.");
-      console.error("Error monitoring progress:", error);
-    }
-  };
   
   
   return (
@@ -579,7 +512,7 @@ const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
                   setMenuOpen(false);
                 }}
               >
-                Team Statistics
+                Generate Report
               </button>
               <button
                 onClick={handleLogout}
@@ -931,211 +864,131 @@ const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
 
 
 
-            {/* Monitor Progress Section */}
-            {selectedAction === "monitorProgress" && (
-              <form className="mt-6 space-y-4" onSubmit={handleMonitorProgress}>
-              
+          {/* Monitor Progress Section */}
+          {selectedAction === "monitorProgress" && (
+            <div className="mt-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Select a project for the progress monitoring
                 </label>
-              <select
-              value={selectedProjectProgress || ""}
-              onChange={handleProjectChangeProgress}
-              className="block w-full px-4 py-2 border rounded mt-2"
-            >
-              <option value="" disabled>
-                Select a project
-              </option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-              </div>
-
-              
-              {progressData && (
-              <div className="mt-6">
-              <h3 className="text-lg font-bold mb-4">Project Progress</h3>
-    
-              
-              <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
-                <div
-                  className="bg-sky-600 h-4 rounded-full"
-                  style={{ width: `${progressData.progressPercentage}%` }}
-                ></div>
-              </div>
-              <p className="text-sm mb-4">
-                Progress: {progressData.progressPercentage}% completed
-              </p>
-
-              
-              {progressData.delayedTasks.length > 0 ? (
-                <div className="text-red-600 font-bold">
-                  {progressData.delayedTasks.length} tasks are delayed!
-                </div>
-              ) : (
-                <div className="text-green-600 font-bold">No delays detected.</div>
-              )}
-
-              
-              <div className="mt-6">
-                <h4 className="text-lg font-bold">Task Status Overview</h4>
-                <div className="flex justify-center mt-4">
-                  <TaskStatusChart
-                    completed={progressData.completedTasks.length}
-                    inProgress={progressData.inProgressTasks.length}
-                    notStarted={progressData.notStartedTasks.length}
-                  />
-                </div>
-              </div>
-
-              
-              <div className="mt-6">
-                <h4 className="text-lg font-bold">Task Details</h4>
-                <ul>
-                  {tasksProgress.map((task) => (
-                    <li key={task.id} className="border-b py-2">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <h5 className="font-bold">{task.name}</h5>
-                          <p>Status: {task.status}</p>
-                        </div>
-                        <button
-                          onClick={() => setSelectedTaskDetails(task)}
-                          className="text-blue-500 hover:underline"
-                        >
-                          More Details
-                        </button>
-                      </div>
-                      
-                      {selectedTaskDetails?.id === task.id && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          <p>Description: {task.description}</p>
-                          <p>Assigned Member: {usersProgress.map((user) => (
-                        <label key={user.id}>
-                        {user.firstName} {user.lastName} </label>                     
-                        ))}</p>                 
-                          <p>Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
-                        </div>
-                      )}
-                    </li>
+                <select
+                  value={selectedProjectProgress || ""}
+                  onChange={handleProjectChangeProgress}
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                >
+                  <option value="" disabled>
+                    Select a project
+                  </option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
                   ))}
-                </ul>
+                </select>
               </div>
-            </div>
-          )}
 
-              <button
-                type="submit"
-                className="bg-sky-600 text-white px-4 py-2 rounded hover:bg-sky-700"
-              >
-                See progress
-              </button>
-            </form>
+              {progressData && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-bold mb-4">Project Progress</h3>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
+                    <div
+                      className="bg-sky-600 h-4 rounded-full"
+                      style={{ width: `${progressData.progressPercentage}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm mb-4">
+                    Progress: {progressData.progressPercentage}% completed
+                  </p>
+
+                  {/* Delayed Tasks */}
+                  {progressData.delayedTasks.length > 0 ? (
+                    <div className="text-red-600 font-bold">
+                      {progressData.delayedTasks.length} tasks are delayed!
+                    </div>
+                  ) : (
+                    <div className="text-green-600 font-bold">No delays detected.</div>
+                  )}
+
+                  {/* Task Status Chart */}
+                  <div className="mt-6">
+                    <h4 className="text-lg font-bold">Task Status Overview</h4>
+                    <div className="flex justify-center mt-4">
+                      <TaskStatusChart
+                        completed={progressData.completedTasks.length}
+                        inProgress={progressData.inProgressTasks.length}
+                        notStarted={progressData.notStartedTasks.length}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Task Details */}
+                  <div className="mt-6">
+                    <h4 className="text-lg font-bold">Task Details</h4>
+                    <ul>
+                      {tasksProgress.map((task) => (
+                        <li key={task.id} className="border-b py-2">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h5 className="font-bold">{task.name}</h5>
+                              <p>Status: {task.status}</p>
+                            </div>
+                            <button
+                            onClick={() => setSelectedTaskDetails(task)}
+                            className="text-blue-500 hover:underline"
+                          >
+                            More Details
+                          </button>
+                        </div>
+
+                {selectedTaskDetails?.id === task.id && (
+                <div className="mt-2 text-sm text-gray-600">
+                <p>Description: {task.description}</p>
+                <p>
+                Assigned Member:{" "}
+                {usersProgress
+                  .filter((user) => user.id === task.userId)
+                  .map((user) => (
+                    <label key={user.id}>
+                      {user.firstName} {user.lastName}
+                    </label>
+                  ))}
+                </p>
+                <p>Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
+              </div>
+               )}
+                    </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             )}
-
-
+          </div>
+        )}
 
           </div>
         )}
 
           {selectedSection === "teams" && (
             <div className="bg-white p-6 rounded-lg shadow-lg">
-              <h2 className="text-2xl font-bold mb-4">Team Statistics</h2>
+              <h2 className="text-2xl font-bold mb-4">Team Reports</h2>
               <div className="flex flex-wrap gap-4 justify-start">
           <button
             type="button"
             className={`px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 ${
-              selectedAction === "addTeam" && "ring ring-green-300"
+              selectedAction === "teamStatistics" && "ring ring-green-300"
             } w-full sm:w-auto`}
-            onClick={() => handleAction("addTeam")}
+            onClick={() => handleAction("teamStatistics")}
           >
-            Create Team
+            Team Statistics
           </button>
         </div>
 
 
-          {/* Add Team Form */}
-          {selectedAction === "addTeam" && (
-            <form className="mt-6 space-y-4" onSubmit={handleAddTeam}>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Team Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={teamData.name}
-                  onChange={handleTeamInputChange}
-                  className="block w-full px-4 py-2 border rounded"
-                  required
-                />
-              </div>
-      
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Team Description</label>
-                <textarea
-                  name="description"
-                  value={teamData.description}
-                  onChange={handleTeamInputChange}
-                  className="block w-full px-4 py-2 border rounded"
-                  rows="4"
-                  placeholder="Enter a brief description of the team"
-                />
-              </div>
-      
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Add Projects to Team</label>
-                <div className="relative">
-                  <button type="button"
-                    onClick={handleToggle}
-                    className="w-full px-4 py-2 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {selectedMembers.length > 0
-                      ? `${selectedMembers.length} selected`
-                      : 'Select members'}
-                  </button>
-      
-                  {isOpen && (
-                    <div className="absolute w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
-                      <div className="max-h-60 overflow-y-auto">
-                        {projects.map((project) => (
-                          <labelf
-                            key={project.id}
-                            className="flex items-center px-4 py-2 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
-                          >
-                            <input
-                              type="checkbox"
-                              value={project.id}
-                              checked={selectedMembers.includes(project.id)}
-                              onChange={() => handleSelection(project.id)}
-                              className="mr-2"
-                            />
-                            {project.firstName} {project.lastName}
-                          </labelf>
-                        ))}
-                      </div>
-                      <div className="px-4 py-2 bg-gray-100 border-t border-gray-300 text-right">
-                        <button
-                          onClick={() => setIsOpen(false)}
-                          className="px-4 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-                        >
-                          Done
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-      
-              <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Add Team
-              </button>
-            </form>
+          {/* Team Statistics */}
+          {selectedAction === "teamStatistics" && (
+            <div></div>
           )}
 
 
