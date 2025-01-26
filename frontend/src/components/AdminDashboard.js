@@ -107,7 +107,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/delete/${selectedUser}`, {
+      const response = await fetch(`http://localhost:8080/admin/delete/${selectedUser}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:8080/auth/update/${selectedUserUpdate}`, {
+      const response = await fetch(`http://localhost:8080/admin/update/${selectedUserUpdate}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
