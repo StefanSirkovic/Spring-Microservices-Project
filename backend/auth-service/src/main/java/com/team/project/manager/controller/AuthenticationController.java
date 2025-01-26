@@ -37,54 +37,5 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
-    @DeleteMapping("/delete/{user}")
-    public ResponseEntity<String> delete(@PathVariable("user") User user){
-        if(userRepository.findByEmail(user.getEmail()).isPresent()){
-            this.service.delete(user);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
-    }
-
-    @PutMapping("/update/{user}")
-    public ResponseEntity<AuthenticationResponse> update(@PathVariable("user") User user,
-    @RequestBody RegisterRequest request){
-       try{
-           return ResponseEntity.ok(service.update(user, request));
-       }catch(IllegalArgumentException e){
-           return ResponseEntity.badRequest().body(new AuthenticationResponse(e.getMessage()));
-       }
-    }
-
-    @PutMapping("/{id}/assign-team")
-    public ResponseEntity<User> assignTeam(@PathVariable("id") Integer id, @RequestBody Integer teamId){
-        return ResponseEntity.ok(service.assignTeam(id, teamId));
-    }
-
-    @DeleteMapping("/{id}/delete-team")
-    public ResponseEntity<String> deleteTeam(@PathVariable("id") Integer id){
-        return this.service.deleteTeam(id);
-    }
-
-    @PutMapping("/{id}/team-member")
-    public ResponseEntity<User> addMembers(@PathVariable("id") Integer id, @RequestBody Integer teamId){
-        return ResponseEntity.ok(service.addMembers(id, teamId));
-    }
-
-    @GetMapping("/{teamId}/get-member")
-    public ResponseEntity<List<User>> getMembers(@PathVariable("teamId") Integer teamId){
-        return ResponseEntity.ok(service.getMembers(teamId));
-    }
-
-    @PutMapping("/{id}/remove-member")
-    public ResponseEntity<User> removeMember(@PathVariable("id") Integer id){
-        return ResponseEntity.ok(service.removeMembers(id));
-    }
-
-    @GetMapping("/{userId}/get-user")
-    public ResponseEntity<User> getMember(@PathVariable("userId") Integer userId){
-        return ResponseEntity.ok(service.getMember(userId));
-    }
-
 
 }

@@ -80,7 +80,7 @@ public class TaskService {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        String userServiceUrl = "http://localhost:8080/auth/" + userId + "/get-user";
+        String userServiceUrl = "http://localhost:8080/manager/" + userId + "/get-user";
         try {
             ResponseEntity<UserDto> response = restTemplate.exchange(
                     userServiceUrl,
