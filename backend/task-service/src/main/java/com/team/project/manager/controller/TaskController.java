@@ -51,4 +51,9 @@ public class TaskController {
         return ResponseEntity.ok(tasks);
     }
 
+    @GetMapping("/get-member")
+    public ResponseEntity <UserDto> getMember(@RequestParam("id") Integer taskId) {
+        return ResponseEntity.ok(taskService.getMembersByTask(taskId));
+    }
+
 }
