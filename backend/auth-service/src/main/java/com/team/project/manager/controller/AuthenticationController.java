@@ -81,5 +81,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.removeMembers(id));
     }
 
+    @GetMapping("/{userId}/get-user")
+    public ResponseEntity<User> getMember(@PathVariable("userId") Integer userId){
+        return ResponseEntity.ok(service.getMember(userId));
+    }
+
 
 }

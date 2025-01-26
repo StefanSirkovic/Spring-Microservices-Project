@@ -151,6 +151,12 @@ public class AuthenticationService {
         return user;
 
     }
+
+    public User getMember(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user;
+    }
 }
 
 

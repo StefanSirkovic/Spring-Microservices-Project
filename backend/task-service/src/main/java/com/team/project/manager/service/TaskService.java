@@ -7,10 +7,17 @@ import com.team.project.manager.entity.Team;
 import com.team.project.manager.repository.ProjectRepository;
 import com.team.project.manager.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -19,6 +26,7 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
+    private final RestTemplate restTemplate;
 
     public Task createTask(Integer projectId, Task task) {
         Project project = projectRepository.findById(projectId)
@@ -61,5 +69,34 @@ public class TaskService {
 
     public List<Task> getTasksByTeamAndDateRange(Long teamId, LocalDate startDate, LocalDate endDate) {
         return taskRepository.findByTeamIdAndDateRange(teamId, startDate, endDate);
+    }
+
+    public UserDto getMembersByTask(Integer taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        Integer userId = task.getUserId();
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        String userServiceUrl = "http://localhost:8080/auth/" + userId + "/get-user";
+        try {
+            ResponseEntity<UserDto> response = restTemplate.exchange(
+                    userServiceUrl,
+                    HttpMethod.GET,
+                    entity,
+                    UserDto.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                UserDto user = response.getBody();
+                return (user != null) ? user : null;
+            } else {
+                throw new IllegalArgumentException("Failed to fetch team members from user service");
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while fetching team member for taskId: " + taskId, e);
+        }
     }
 }
