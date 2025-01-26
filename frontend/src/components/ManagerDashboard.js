@@ -3,8 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import '../App.css';
-import { Pie } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Pie, Bar } from "react-chartjs-2";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, BarElement, LinearScale } from "chart.js";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+
 
 const ManagerDashboard = () => {
   const [selectedSection, setSelectedSection] = useState("projects");
@@ -45,6 +49,10 @@ const ManagerDashboard = () => {
     e.preventDefault();
     if (!formData.name || !formData.description || !formData.startDate || !formData.endDate || !formData.team) {
       toast.error("All fields are required.");
+      return;
+    }
+    if (formData.startDate > formData.endDate) {
+      toast.warn("Start date cannot be later than end date.");
       return;
     }
     const requestData = {
@@ -387,56 +395,169 @@ const ManagerDashboard = () => {
   };
   
 
-  ChartJS.register(ArcElement, Tooltip, Legend);
+  ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, BarElement, LinearScale);
 
-const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
-  const data = {
-    labels: ["Completed", "In Progress", "Not Started"],
-    datasets: [
-      {
-        label: "Task Status",
-        data: [completed, inProgress, notStarted],
-        backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
-        borderColor: ["#388E3C", "#FFA000", "#D32F2F"],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}`,
+  const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
+    const data = {
+      labels: ["Completed", "In Progress", "Not Started"],
+      datasets: [
+        {
+          label: "Task Status",
+          data: [completed, inProgress, notStarted],
+          backgroundColor: ["#4CAF50", "#FFC107", "#F44336"],
+          borderColor: ["#388E3C", "#FFA000", "#D32F2F"],
+          borderWidth: 1,
+        },
+      ],
+    };
+  
+    const options = {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: "top",
+        },
+        tooltip: {
+          callbacks: {
+            label: (tooltipItem) => `${tooltipItem.label}: ${tooltipItem.raw}`,
+          },
         },
       },
-    },
+    };
+  
+    return (
+      <div style={{ width: `${size}px`, height: `${size}px` }}>
+        <Pie data={data} options={options} />
+      </div>
+    );
   };
 
-  return (
-    <div style={{ width: `${size}px`, height: `${size}px` }}>
-      <Pie data={data} options={options} />
-    </div>
-  );
-};
+
+      const [tasksProgress, setTasksProgress] = useState([]);
+      const [selectedTaskDetails, setSelectedTaskDetails] = useState(null);
+      const [progressData, setProgressData] = useState({
+      progressPercentage: 0,
+      completedTasks: [],
+      inProgressTasks: [],
+      notStartedTasks: [],
+      delayedTasks: [],
+      });
 
 
-  const [tasksProgress, setTasksProgress] = useState([]);
-  const [selectedTaskDetails, setSelectedTaskDetails] = useState(null);
-  const [progressData, setProgressData] = useState({
-  progressPercentage: 0,
-  completedTasks: [],
-  inProgressTasks: [],
-  notStartedTasks: [],
-  delayedTasks: [],
-  });
+      const [selectedTeamReport, setSelectedTeamReport] = useState("");
+      const [startDate, setStartDate] = useState("");
+      const [endDate, setEndDate] = useState("");
+      const [statistics, setStatistics] = useState(null);
 
-  
-  
+      const handleTeamChange = (e) => {
+        setSelectedTeamReport(e.target.value);
+      };
+
+      const handleFetchStatistics = async () => {
+        if (!selectedTeamReport || !startDate || !endDate) {
+          toast.warn("Please select a team and date range.");
+          return;
+        }
+
+        if (new Date(startDate) > new Date(endDate)) {
+          toast.warn("Start date cannot be later than end date.");
+          return;
+        }
+        
+        const response = await fetchStatistics(selectedTeamReport, startDate, endDate);
+        setStatistics(response);
+      };
+
+        const fetchStatistics = async (teamId, startDate, endDate) => {
+          try {
+            const response = await fetch(`http://localhost:8082/tasks/get-tasks?teamId=${teamId}&startDate=${startDate}&endDate=${endDate}`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            });
+        
+        if (!response.ok) throw new Error("Failed to fetch statistics");
+        
+        const tasks = await response.json();
+        toast.success("Statistics loaded successfully!")
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter((task) => task.status === "completed").length;
+        const inProgressTasks = tasks.filter((task) => task.status === "in-progress").length;
+        const notStartedTasks = tasks.filter((task) => task.status === "not-started").length;
+        let delayedTasks = tasks.filter((task) => new Date(task.deadline) < new Date(task.completedAt)).length;
+        delayedTasks+=tasks.filter((task) => new Date (task.deadline) < new Date()).length;
+        const totalCompletionTime = tasks
+          .filter((task) => task.status === "completed")
+          .reduce((sum, task) => sum + (new Date(task.completedAt) - new Date(task.startDate)) / (1000 * 60 * 60 * 24), 0);
+      
+        const averageCompletionTime = (totalCompletionTime / completedTasks).toFixed(2);
+        
+        const performanceData = tasks.map((task) => ({
+          member: task.userId,
+          completedTasks: task.status === "completed" ? 1 : 0,
+          delayedTasks: ((new Date(task.deadline) < new Date(task.completedAt)) 
+          || new Date(task.deadline) < new Date()) ? 1 : 0,
+        }));
+        
+        return {
+          totalTasks,
+          completedTasks,
+          inProgressTasks,
+          notStartedTasks,
+          averageCompletionTime,
+          delayedTasks,
+          performanceData,
+        };
+          }catch (error) {
+            console.error("Error fetching statistics:", error);
+            toast.error("Failed to fetch team statistics. Please try again later.");
+          }
+        };
+      
+        const PerformanceChart = ({ data }) => {
+          const chartData = {
+            labels: data.map((item) => item.member),
+            datasets: [
+              {
+                label: "Completed Tasks",
+                data: data.map((item) => item.completedTasks),
+                backgroundColor: "rgba(75, 192, 192, 0.6)",
+              },
+              {
+                label: "Delayed Tasks",
+                data: data.map((item) => item.delayedTasks),
+                backgroundColor: "rgba(255, 99, 132, 0.6)",
+              },
+            ],
+          };
+        
+          return <Bar data={chartData} />;
+        };
+
+        const exportToPDF = () => {
+          const doc = new jsPDF();
+          doc.text("Team Statistics Report", 10, 10);
+          doc.autoTable({
+            head: [["Total Tasks", "Completed", "In Progress", "Not Started", "Delayed"]],
+            body: [[
+              statistics.totalTasks,
+              statistics.completedTasks,
+              statistics.inProgressTasks,
+              statistics.notStartedTasks,
+              statistics.delayedTasks,
+            ]],
+          });
+          doc.save("team_statistics_report.pdf");
+        };
+
+        const exportToExcel = () => {
+          const worksheet = XLSX.utils.json_to_sheet([statistics]);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "Statistics");
+          XLSX.writeFile(workbook, "team_statistics_report.xlsx");
+        };
+
+      
   
   return (
     <div className="min-h-screen bg-gray-100">
@@ -986,11 +1107,96 @@ const TaskStatusChart = ({ completed, inProgress, notStarted, size = 350 }) => {
         </div>
 
 
-          {/* Team Statistics */}
-          {selectedAction === "teamStatistics" && (
-            <div></div>
-          )}
+        {selectedAction === "teamStatistics" && (
+        <div className="mt-6 space-y-4">
+          <div>
+            {/* Team Selection */}
+            <label className="block text-sm font-medium text-gray-700">
+              Select a Team
+            </label>
+            <select
+              value={selectedTeamReport || ""}
+              onChange={handleTeamChange}
+              className="block w-full px-4 py-2 border rounded mt-2"
+            >
+              <option value="" disabled>
+                Select a team
+              </option>
+              {teams.map((team) => (
+                <option key={team.id} value={team.id}>
+                  {team.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
+          <div>
+            {/* Date Range Selection */}
+            <label className="block text-sm font-medium text-gray-700">
+              Select Date Range
+            </label>
+            <div className="flex space-x-4 mt-2">
+              <input
+                type="date"
+                value={startDate || ""}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="block w-full px-4 py-2 border rounded"
+              />
+              <input
+                type="date"
+                value={endDate || ""}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="block w-full px-4 py-2 border rounded"
+              />
+            </div>
+          </div>
+
+          {/* Fetch Statistics Button */}
+          <button
+            onClick={handleFetchStatistics}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-4"
+          >
+            Load Statistics
+          </button>
+
+          {statistics && (
+            <div className="mt-6">
+              <h3 className="text-lg font-bold mb-4">Team Statistics Report</h3>
+              <div className="space-y-2">
+                <p>Total Tasks: {statistics.totalTasks}</p>
+                <p>Completed Tasks: {statistics.completedTasks}</p>
+                <p>In Progress Tasks: {statistics.inProgressTasks}</p>
+                <p>Not Started Tasks: {statistics.notStartedTasks}</p>
+                <p>Average Completion Time: {statistics.averageCompletionTime} days</p>
+                <p>Delayed Tasks: {statistics.delayedTasks}</p>
+              </div>
+              <div className="mt-6">
+                <h4 className="text-lg font-bold">Team Performance Overview</h4>
+                <div className="flex justify-center mt-4">
+                  <PerformanceChart data={statistics.performanceData} />
+                </div>
+              </div>
+
+              {/* Export Options */}
+              <div className="mt-6 flex space-x-4">
+                <button
+                  onClick={exportToPDF}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
+                  Export to PDF
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  Export to Excel
+                </button>
+              </div>
+
+                  </div>
+                )}
+              </div>
+            )}
 
 
 
