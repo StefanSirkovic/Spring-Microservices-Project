@@ -495,7 +495,6 @@ const ManagerDashboard = () => {
       
           const averageCompletionTime = (totalCompletionTime / completedTasks).toFixed(2);
       
-          // Fetch member information for each task
           const performanceData = await Promise.all(
             tasks.map(async (task) => {
               try {
@@ -508,7 +507,6 @@ const ManagerDashboard = () => {
                 if (!memberResponse.ok) throw new Error("Failed to fetch member");
       
                 const member = await memberResponse.json();
-                console.log(member);
                 return {
                   member: `${member.firstName} ${member.lastName}`,
                   completedTasks: task.status === "completed" ? 1 : 0,
@@ -526,7 +524,6 @@ const ManagerDashboard = () => {
               }
             })
           );
-          console.log(performanceData);
       
           return {
             totalTasks,
@@ -1161,7 +1158,7 @@ const ManagerDashboard = () => {
           </div>
 
           <div>
-            {/* Date Range Selection */}
+           
             <label className="block text-sm font-medium text-gray-700">
               Select Date Range
             </label>
@@ -1181,7 +1178,7 @@ const ManagerDashboard = () => {
             </div>
           </div>
 
-          {/* Fetch Statistics Button */}
+        
           <button
             onClick={handleFetchStatistics}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-4"
@@ -1207,7 +1204,7 @@ const ManagerDashboard = () => {
                 </div>
               </div>
 
-              {/* Export Options */}
+          
               <div className="mt-6 flex space-x-4">
                 <button
                   onClick={exportToPDF}
