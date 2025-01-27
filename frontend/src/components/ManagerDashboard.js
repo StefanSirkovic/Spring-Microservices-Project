@@ -490,10 +490,27 @@ const ManagerDashboard = () => {
           delayedTasks += tasks.filter((task) => new Date(task.deadline) < new Date()).length;
       
           const totalCompletionTime = tasks
-            .filter((task) => task.status === "completed")
-            .reduce((sum, task) => sum + (new Date(task.completedAt) - new Date(task.startDate)) / (1000 * 60 * 60 * 24), 0);
-      
-          const averageCompletionTime = (totalCompletionTime / completedTasks).toFixed(2);
+          .filter((task) => task.status === "completed")
+          .reduce((sum, task) => {
+            const startDate = task.startDate ? new Date(task.startDate) : null;
+            const completedAt = task.completedAt ? new Date(task.completedAt) : null;
+
+            if (!startDate && completedAt && !isNaN(completedAt)) {
+              return sum + 0;
+            }
+
+            if (startDate && completedAt && !isNaN(startDate) && !isNaN(completedAt)) {
+              const timeDiff = (completedAt - startDate) / (1000 * 60 * 60 * 24);
+              return sum + timeDiff;
+            }
+
+            
+            return sum;
+          }, 0);
+
+        
+        const averageCompletionTime = completedTasks > 0 ? (totalCompletionTime / completedTasks).toFixed(2) : 0;
+
       
           const performanceData = await Promise.all(
             tasks.map(async (task) => {
