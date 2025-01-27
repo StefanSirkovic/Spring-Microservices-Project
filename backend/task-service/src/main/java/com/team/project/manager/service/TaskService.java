@@ -99,4 +99,13 @@ public class TaskService {
             throw new IllegalArgumentException("Error while fetching team member for taskId: " + taskId, e);
         }
     }
+
+    public List<Task> getTaskByUser(Integer userId) {
+        List<Task> tasks = new ArrayList<>();
+
+        tasks = taskRepository.findAllByUserId(userId);
+
+        return tasks;
+
+    }
 }
