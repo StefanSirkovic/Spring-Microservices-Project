@@ -18,4 +18,5 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
             @Param("teamId") Long teamId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+    List<Task> findAllByUserId(Integer userId);
 }

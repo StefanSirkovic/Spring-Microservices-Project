@@ -56,4 +56,9 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getMembersByTask(taskId));
     }
 
+    @GetMapping("/get-task/{id}")
+    public ResponseEntity<List<Task>> getByUser(@PathVariable("id") Integer userId) {
+        return ResponseEntity.ok(taskService.getTaskByUser(userId));
+    }
+
 }
