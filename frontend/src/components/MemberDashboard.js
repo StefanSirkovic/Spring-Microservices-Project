@@ -123,6 +123,74 @@ const MemberDashboard = () => {
       return data;
       
     };
+
+
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState("");
+    const [selectedTaskComment, setSelectedTaskComment] = useState(null);
+
+    const fetchTaskComments = async (taskId) => {
+      const response = await fetch(`http://localhost:8082/tasks/${taskId}/get-comments`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch comments.");
+      }
+      const data = await response.json();
+  
+      const parsedComments = data.map((item) => {
+        try {
+          return JSON.parse(item);
+        } catch (error) {
+          console.error("Failed to parse comment:", item, error);
+          return null;
+        }
+      }).filter((comment) => comment && comment.text); 
+
+      
+      return parsedComments;
+    };
+
+    const handleAddComment = async () => {
+      if (!newComment.trim()) {
+        setError("Comment cannot be empty.");
+        return;
+      }
+      
+    
+      try {
+        setLoading(true);
+        const response = await fetch(`http://localhost:8082/tasks/${selectedTaskComment}/add-comment`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: newComment }),
+        });
+    
+        if (!response.ok) {
+          throw new Error("Failed to add comment.");
+        }
+    
+        
+        const updatedComments = await fetchTaskComments(selectedTaskComment);
+        setComments(updatedComments);
+       
+        setNewComment("");
+        toast.success("Comment added successfully!");
+        setError(null);
+        setSelectedAction(null);
+        
+      } catch (err) {
+        setError("Failed to add comment.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    
+
+
+
+
     
   return (
     <div className="min-h-screen bg-gray-100">
@@ -353,8 +421,84 @@ const MemberDashboard = () => {
 
             {/* Task Comments Section */}
             {selectedAction === "taskComments" && (
-              <div></div>
+            <div className="mt-6">
+            <h3 className="text-lg font-bold">Task Comments</h3>
+
+    
+            <label htmlFor="taskSelect" className="block mt-4 font-medium">
+              Select a Task:
+            </label>
+            <select
+              id="taskSelect"
+              value={selectedTaskComment || ""}
+              onChange={async (e) => {
+                const taskId = Number(e.target.value);
+                setSelectedTaskComment(taskId);
+                setLoading(true);
+                try {
+                  const comments = await fetchTaskComments(taskId);
+                  setComments(comments);
+                  setError(null);
+                } catch (err) {
+                  setError("Failed to fetch comments.");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              className="block w-full px-4 py-2 border rounded mt-2"
+            >
+              <option value="" disabled>
+                Select a task
+              </option>
+              {tasks.map((task) => (
+                <option key={task.id} value={task.id}>
+                  {task.name}
+                </option>
+              ))}
+            </select>
+
+    
+            {selectedTaskComment && (
+              <div className="mt-4">
+                <label htmlFor="commentText" className="block font-medium">
+                  Add a Comment:
+                </label>
+                <textarea
+                  id="commentText"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write your comment here..."
+                  className="block w-full px-4 py-2 border rounded mt-2"
+                />
+
+                <button
+                  onClick={handleAddComment}
+                  className="bg-indigo-500 text-white px-4 py-2 mt-4 rounded hover:bg-indigo-600"
+                  disabled={loading || !newComment.trim()}
+                >
+                  {loading ? "Adding Comment..." : "Add Comment"}
+                </button>
+              </div>
             )}
+
+
+            <div className="mt-6">
+            <h4 className="text-md font-semibold">Comments:</h4>
+            {comments.length > 0 ? (
+              <ul className="list-disc pl-5">
+                {comments.map((comment, index) => (
+                  <li key={index} className="text-gray-800">
+                    {comment.text}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-600">No comments for this task.</p>
+            )}
+          </div>
+          {error && <p className="text-red-500 mt-4">{error}</p>}
+        </div>
+      )}
 
 
           </div>
