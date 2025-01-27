@@ -61,4 +61,12 @@ public class TaskController {
         return ResponseEntity.ok(taskService.getTaskByUser(userId));
     }
 
+    @PutMapping("/update-status/{id}")
+    public ResponseEntity<String> updateStatus(@PathVariable("id") Integer taskId, @RequestParam("status") String status) {
+        return ResponseEntity.ok(taskService.updateTaskStatus(taskId,status));
+    }
+
+
+
+
 }

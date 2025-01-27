@@ -108,4 +108,26 @@ public class TaskService {
         return tasks;
 
     }
+
+    public String updateTaskStatus(Integer taskId, String status) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        if(status.equals("completed"))
+            task.setCompletedAt(LocalDate.now());
+
+        if(status.equals("in-progress")){
+            task.setStartDate(LocalDate.now());
+            task.setCompletedAt(null);
+        }
+        if(status.equals("not-started")){
+            task.setStartDate(null);
+            task.setCompletedAt(null);
+        }
+
+        task.setStatus(status);
+        taskRepository.save(task);
+        return status;
+
+    }
 }
