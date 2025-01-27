@@ -130,4 +130,23 @@ public class TaskService {
         return status;
 
     }
+
+    public List<String> getAllComments(Integer taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        List<String> comments = new ArrayList<>();
+        comments = task.getComments();
+        return comments;
+    }
+
+    public String addComment(Integer taskId, String comment) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with ID: " + taskId));
+
+        task.getComments().add(comment);
+        taskRepository.save(task);
+
+        return "Comment added successfully";
+    }
 }

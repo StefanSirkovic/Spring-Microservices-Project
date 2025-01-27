@@ -22,7 +22,7 @@ public class TaskController {
 
     @PostMapping("/create/{id}")
     public ResponseEntity<Task> create(@PathVariable("id") Integer projectId, @RequestBody Task task) {
-        return ResponseEntity.ok(taskService.createTask(projectId,task));
+        return ResponseEntity.ok(taskService.createTask(projectId, task));
     }
 
     @GetMapping
@@ -31,12 +31,12 @@ public class TaskController {
     }
 
     @DeleteMapping("/remove/{id}")
-    public ResponseEntity<String> remove(@PathVariable("id") Integer taskId){
+    public ResponseEntity<String> remove(@PathVariable("id") Integer taskId) {
         return ResponseEntity.ok(taskService.removeTask(taskId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<List<Task>> getByProject(@PathVariable("id") Integer projectId){
+    public ResponseEntity<List<Task>> getByProject(@PathVariable("id") Integer projectId) {
         return ResponseEntity.ok(taskService.getTaskByProject(projectId));
     }
 
@@ -52,7 +52,7 @@ public class TaskController {
     }
 
     @GetMapping("/get-member")
-    public ResponseEntity <UserDto> getMember(@RequestParam("id") Integer taskId) {
+    public ResponseEntity<UserDto> getMember(@RequestParam("id") Integer taskId) {
         return ResponseEntity.ok(taskService.getMembersByTask(taskId));
     }
 
@@ -63,10 +63,21 @@ public class TaskController {
 
     @PutMapping("/update-status/{id}")
     public ResponseEntity<String> updateStatus(@PathVariable("id") Integer taskId, @RequestParam("status") String status) {
-        return ResponseEntity.ok(taskService.updateTaskStatus(taskId,status));
+        return ResponseEntity.ok(taskService.updateTaskStatus(taskId, status));
+    }
+
+    @GetMapping("/{id}/get-comments")
+    public ResponseEntity<List<String>> getComments(@PathVariable("id") Integer taskId) {
+        return ResponseEntity.ok(taskService.getAllComments(taskId));
+    }
+
+    @PostMapping("/{id}/add-comment")
+    public ResponseEntity<String> addComment(@PathVariable("id") Integer taskId, @RequestBody String comment) {
+        return ResponseEntity.ok(taskService.addComment(taskId, comment));
     }
 
 
 
-
 }
+
+
