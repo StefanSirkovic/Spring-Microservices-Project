@@ -600,9 +600,10 @@ const ManagerDashboard = () => {
           XLSX.utils.book_append_sheet(workbook, worksheet, "Statistics");
           XLSX.writeFile(workbook, "team_statistics_report.xlsx");
         };
-
+        
       
-  
+       
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* ToastContainer for alerts */}
@@ -1121,6 +1122,14 @@ const ManagerDashboard = () => {
                   ))}
                 </p>
                 <p>Deadline: {new Date(task.deadline).toLocaleDateString()}</p>
+                Task Comments: <ul className="list-disc pl-5"> {task.comments.length > 0 ? (
+                  
+                task.comments.map((comment, index) => (
+                <li key={index} className="text-gray-800">{JSON.parse(comment).text} </li>
+                  ))
+                ) : (
+                  <li className="text-gray-800">No comments available.</li>
+                )}</ul>
               </div>
                )}
                     </li>

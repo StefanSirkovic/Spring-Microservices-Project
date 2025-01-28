@@ -13,8 +13,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +32,19 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final RestTemplate restTemplate;
 
     public AuthenticationResponse register(RegisterRequest request) {
 
-        if(userRepository.findByEmail(request.getEmail()).isPresent())
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
+        }
 
-        var user= User.builder()
+        if (request.getRole() == null) {
+            throw new IllegalArgumentException("Role must be provided");
+        }
+
+        var user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
@@ -43,11 +52,35 @@ public class AuthenticationService {
                 .role(request.getRole())
                 .build();
 
-        if(request.getRole()==null)
-            throw new IllegalArgumentException("Role must be provided");
-
         repository.save(user);
+
         var jwtToken = jwtService.generateToken(user);
+
+
+        String emailServiceUrl = "http://localhost:8084/emails/send";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("to", user.getEmail());
+        formData.add("subject", "Welcome to Our Platform!");
+        formData.add("text", String.format(
+                "Hello %s %s,\n\n" +
+                        "Welcome to our platform! We're excited to have you on board.\n\n" +
+                        "Best regards,\nThe Team",
+                user.getFirstName(), user.getLastName()
+        ));
+
+        try {
+            ResponseEntity<String> response = restTemplate.postForEntity(emailServiceUrl, formData, String.class);
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                System.err.println("Failed to send registration email: " + response.getBody());
+            }
+        } catch (Exception e) {
+            System.err.println("Error while sending registration email: " + e.getMessage());
+        }
+
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
