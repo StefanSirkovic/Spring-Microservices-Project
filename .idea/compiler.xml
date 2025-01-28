@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="auth-service" />
         <module name="task-service" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>
