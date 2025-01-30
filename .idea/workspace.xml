@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="071233e5-0627-4c33-9146-c585a8d7eada" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-exec.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-exec.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-jar-with-dependencies.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-jar-with-dependencies.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationResponse.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/RegisterRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/RegisterRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/notification-service/src/main/java/com/team/project/manager/NotificationServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification-service/src/main/java/com/team/project/manager/NotificationServiceApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/notification-service/target/classes/com/team/project/manager/service/EmailService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification-service/target/classes/com/team/project/manager/service/EmailService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/TaskServiceApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/ProjectController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/TaskController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/TeamController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/dto/TeamDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/dto/UserDto.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Project$ProjectBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Project.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Task$TaskBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Task.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Team$TeamBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Team.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/ProjectRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/TaskRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/TeamRepository.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/ProjectService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/TaskService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/TeamService.class" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="2sGVFoWB1usnDjb0i4EUuYmXMWT" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Maven.auth-service [clean].executor": "Run",
+    "Maven.auth-service [install].executor": "Run",
+    "Maven.auth-service [validate].executor": "Run",
+    "Maven.notification-service [clean].executor": "Run",
+    "Maven.notification-service [install].executor": "Run",
+    "Maven.notification-service [validate].executor": "Run",
+    "Maven.task-service [clean].executor": "Run",
+    "Maven.task-service [install].executor": "Run",
+    "Maven.task-service [validate].executor": "Run",
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.AuthServiceApplication.executor": "Run",
+    "Spring Boot.NotificationServiceApplication.executor": "Run",
+    "Spring Boot.TaskServiceApplication.executor": "Run",
+    "git-widget-placeholder": "task-service",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/Stefan/Projekti/Spring projekti/team-project-manager",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.3653586",
+    "run.configurations.included.in.services": "true",
+    "settings.editor.selected.configurable": "project.propCompiler",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Stefan\Projekti\Spring projekti\team-project-manager\backend\notification-service\src\main\resources" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\Stefan\Projekti\Spring projekti\team-project-manager\backend\notification-service\src\main\java\com\team\project\manager\service" />
+      <recent name="D:\Stefan\Projekti\Spring projekti\team-project-manager\backend\notification-service\src\main\java\com\team\project\manager\controller" />
+      <recent name="D:\Stefan\Projekti\Spring projekti\team-project-manager\backend\notification-service\src\main\java\com\team\project\manager" />
+      <recent name="D:\Stefan\Projekti\Spring projekti\team-project-manager\backend\notification-service" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.team.project.manager.config" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="configurationTypes">
+      <set>
+        <option value="KtorApplicationConfigurationType" />
+        <option value="MicronautRunConfigurationType" />
+        <option value="QuarkusRunConfigurationType" />
+        <option value="SpringBootApplicationConfigurationType" />
+      </set>
+    </option>
+  </component>
+  <component name="RunManager" selected="Spring Boot.NotificationServiceApplication">
+    <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="auth-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.team.project.manager.AuthServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="NotificationServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="notification-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.team.project.manager.NotificationServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TaskServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="task-service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.team.project.manager.TaskServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fdfe4dae3a2d-intellij.indexing.shared.core-IU-243.22562.218" />
+        <option value="bundled-js-predefined-d6986cc7102b-deb605915726-JavaScript-IU-243.22562.218" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="071233e5-0627-4c33-9146-c585a8d7eada" name="Changes" comment="" />
+      <created>1738081798321</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1738081798321</updated>
+      <workItem from="1738081799474" duration="253000" />
+      <workItem from="1738086695353" duration="101000" />
+      <workItem from="1738089531338" duration="5818000" />
+      <workItem from="1738140781227" duration="42000" />
+      <workItem from="1738140929863" duration="45000" />
+      <workItem from="1738230198926" duration="385000" />
+      <workItem from="1738260636668" duration="1518000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
