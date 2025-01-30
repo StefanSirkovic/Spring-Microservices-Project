@@ -5,34 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="071233e5-0627-4c33-9146-c585a8d7eada" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-exec.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-exec.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-jar-with-dependencies.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT-jar-with-dependencies.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/auth-service-1.0-SNAPSHOT.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationRequest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationResponse.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/AuthenticationResponse.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/RegisterRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/auth-service/target/classes/com/team/project/manager/auth/RegisterRequest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/notification-service/src/main/java/com/team/project/manager/NotificationServiceApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification-service/src/main/java/com/team/project/manager/NotificationServiceApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/notification-service/target/classes/com/team/project/manager/service/EmailService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/notification-service/target/classes/com/team/project/manager/service/EmailService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/TaskServiceApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/ProjectController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/TaskController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/controller/TeamController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/dto/TeamDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/dto/UserDto.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Project$ProjectBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Project.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Task$TaskBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Task.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Team$TeamBuilder.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/entity/Team.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/ProjectRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/TaskRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/repository/TeamRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/ProjectService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/TaskService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/task-service/target/classes/com/team/project/manager/service/TeamService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,7 +89,7 @@
       </set>
     </option>
   </component>
-  <component name="RunManager" selected="Spring Boot.NotificationServiceApplication">
+  <component name="RunManager" selected="Spring Boot.TaskServiceApplication">
     <configuration name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="auth-service" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.team.project.manager.AuthServiceApplication" />
@@ -160,7 +134,7 @@
       <workItem from="1738140781227" duration="42000" />
       <workItem from="1738140929863" duration="45000" />
       <workItem from="1738230198926" duration="385000" />
-      <workItem from="1738260636668" duration="1518000" />
+      <workItem from="1738260636668" duration="3652000" />
     </task>
     <servers />
   </component>
