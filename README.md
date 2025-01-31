@@ -70,7 +70,7 @@ All services are containerized using **Docker Compose**.
 +-----------------------+  +----------------------+
 |  PostgreSQL (auth_db) |  | PostgreSQL (task_db) |
 +-----------------------+  +----------------------+
-
+```
 ---
 
 ## **Tech Stack**
@@ -117,7 +117,7 @@ team-project-manager/
 │   └── docker-compose.yml
 ├── README.md
 └── frontend/
-
+```
 ---
 
 ## **Prerequisites**
@@ -137,7 +137,7 @@ Verify that the following is installed on your computer:
     git clone https://github.com/StefanSirkovic/spring-microservices-project-management.git
     cd team-project-manager/backend
     ```
-
+    
 2. **Build the backend services**:
     ```bash
     mvn clean package -DskipTests
@@ -296,16 +296,20 @@ To contribute:
 2. **Clone the repository** to your local machine:
    ```bash
    git clone https://github.com/StefanSirkovic/spring-microservices-project-management.git
+   ```
 3. **Create a new branch** for your feature or bug fix:
    ```bash
    git checkout -b feature/YourFeatureName
+   ```
 4. **Make changes and commit them:**
    ```bash
    git add .
    git commit -m "Your descriptive commit message"
+   ```
 5. **Push the changes** to your forked repository:
    ```bash
    git push origin feature/YourFeatureName
+   ```
 6. **Submit a Pull Request:** Go to the GitHub repository and open a new Pull Request.      
 
 ---
