@@ -51,7 +51,7 @@
     "git-widget-placeholder": "task-service",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/Stefan/Projekti/Spring projekti/team-project-manager",
+    "last_opened_file_path": "D:/Stefan/Projekti/Spring projekti/team-project-manager/backend",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -134,7 +134,9 @@
       <workItem from="1738140781227" duration="42000" />
       <workItem from="1738140929863" duration="45000" />
       <workItem from="1738230198926" duration="385000" />
-      <workItem from="1738260636668" duration="3652000" />
+      <workItem from="1738260636668" duration="4381000" />
+      <workItem from="1738338665395" duration="96000" />
+      <workItem from="1738361630907" duration="15000" />
     </task>
     <servers />
   </component>
